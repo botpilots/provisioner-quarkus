@@ -45,6 +45,24 @@ public class MealResource {
 		return Response.ok(ingredientId).build();
 	}
 
+	@DELETE
+	@Path("/{mealId}/ingredients/{ingredientId}")
+	public Response removeIngredient(
+			@PathParam("mealId") SafeID mealId,
+			@PathParam("ingredientId") SafeID ingredientId) {
+		Meal meal = (Meal) Manager.getBaseClass(mealId);
+		if (meal == null) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+
+		try {
+			meal.removeChild(ingredientId);
+			return Response.ok().build();
+		} catch (IllegalArgumentException e) {
+			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+		}
+	}
+
 	@PUT
 	@Path("/{mealId}/ingredients/{ingredientId}")
 	public Response modifyIngredientWeight(
