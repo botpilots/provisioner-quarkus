@@ -2,9 +2,10 @@
 const API_BASE_URL = 'http://localhost:8080';
 
 // State variables
-let adventures = [];  // Add this to store all adventures
+let adventures = [];  // Store all adventures
 let currentAdventure = null;
 let selectedMeal = null;
+let lastAdventureData = null;  // Store last fetched adventure data for comparison
 
 // DOM elements
 const adventuresList = document.getElementById('adventures-list');
@@ -33,6 +34,33 @@ async function makeApiCall(url, method = 'GET', body = null) {
     }
 }
 
+// Helper function to check if data has changed
+function hasDataChanged(newData, oldData) {
+    if (!oldData) return true;
+    return JSON.stringify(newData) !== JSON.stringify(oldData);
+}
+
+// Helper function to refresh current adventure data
+async function refreshCurrentAdventure() {
+    if (!currentAdventure) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch adventure details');
+        }
+        
+        const newData = await response.json();
+        if (hasDataChanged(newData, lastAdventureData)) {
+            lastAdventureData = newData;
+            currentAdventure = newData;
+            updateAdventureDisplay();
+        }
+    } catch (error) {
+        console.error('Error refreshing adventure:', error);
+    }
+}
+
 // Adventure Creation
 async function createAdventure() {
     const name = document.getElementById('adventureName').value;
@@ -54,24 +82,13 @@ async function createAdventure() {
         }
 
         const data = await response.json();
-        // Initialize the adventure object with default values
-        const newAdventure = {
-            id: data.id,
-            name: name,
-            days: 0,
-            crew: [],
-            meals: []
-        };
-        
-        // Add to adventures array and update dropdown
-        adventures.push(newAdventure);
+        adventures.push(data);
         updateAdventureDropdown();
         
         // Select the new adventure
-        currentAdventure = newAdventure;
-        document.getElementById('adventureSelect').value = newAdventure.id;
-        
-        updateAdventureDisplay();
+        currentAdventure = data;
+        document.getElementById('adventureSelect').value = data.id;
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error creating adventure: ' + error.message);
     }
@@ -82,27 +99,20 @@ async function selectAdventure(adventureId) {
     if (!adventureId) {
         currentAdventure = null;
         selectedMeal = null;
+        lastAdventureData = null;
         updateAdventureDisplay();
         return;
     }
 
     try {
-        // Fetch the full adventure data from the server
         const response = await fetch(`${API_BASE_URL}/adventures/${adventureId}`);
         if (!response.ok) {
             throw new Error('Failed to fetch adventure details');
         }
         
         const adventureData = await response.json();
-        // Ensure all required properties exist
-        currentAdventure = {
-            id: adventureData.id || adventureId,
-            name: adventureData.name || '',
-            days: adventureData.days || 0,
-            crew: adventureData.crew || [],
-            meals: adventureData.meals || []
-        };
-        
+        currentAdventure = adventureData;
+        lastAdventureData = adventureData;
         selectedMeal = null;
         updateAdventureDisplay();
     } catch (error) {
@@ -118,10 +128,6 @@ async function removeSelectedAdventure() {
         return;
     }
 
-    if (!confirm(`Are you sure you want to remove the adventure "${currentAdventure.name}"?`)) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}`, {
             method: 'DELETE'
@@ -131,12 +137,10 @@ async function removeSelectedAdventure() {
             throw new Error('Failed to remove adventure');
         }
 
-        // Remove from adventures array
         adventures = adventures.filter(a => a.id !== currentAdventure.id);
-        
-        // Update dropdown and reset current selection
         currentAdventure = null;
         selectedMeal = null;
+        lastAdventureData = null;
         updateAdventureDropdown();
         updateAdventureDisplay();
     } catch (error) {
@@ -189,23 +193,7 @@ async function addCrewMember() {
             throw new Error('Failed to add crew member');
         }
 
-        const data = await response.json();
-        // Add the new crew member to the current adventure's crew array
-        if (!currentAdventure.crew) {
-            currentAdventure.crew = [];
-        }
-        currentAdventure.crew.push({
-            id: data.id,
-            name: document.getElementById('crewName').value,
-            age: parseInt(document.getElementById('crewAge').value),
-            height: parseInt(document.getElementById('crewHeight').value),
-            weight: parseInt(document.getElementById('crewWeight').value),
-            gender: document.getElementById('crewGender').value,
-            activityLevel: document.getElementById('crewActivity').value,
-            strategy: document.getElementById('crewStrategy').value
-        });
-        
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding crew member: ' + error.message);
     }
@@ -231,9 +219,7 @@ async function setDays() {
             throw new Error('Failed to set days');
         }
 
-        // Update the current adventure's days
-        currentAdventure.days = parseInt(days);
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error setting days: ' + error.message);
     }
@@ -264,21 +250,7 @@ async function addMeal() {
             throw new Error('Failed to add meal');
         }
 
-        const data = await response.json();
-        // Add the new meal to the current adventure's meals array
-        if (!currentAdventure.meals) {
-            currentAdventure.meals = [];
-        }
-        const newMeal = {
-            id: data,  // The API returns just the ID
-            name: name,
-            ingredients: []
-        };
-        currentAdventure.meals.push(newMeal);
-        // Automatically select the new meal
-        selectMeal(newMeal);
-        
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding meal: ' + error.message);
     }
@@ -309,23 +281,7 @@ async function addIngredient() {
             throw new Error('Failed to add ingredient');
         }
 
-        const data = await response.json();
-        // Add the new ingredient to the selected meal's ingredients array
-        const meal = currentAdventure.meals.find(m => m.id === selectedMeal.id);
-        if (meal) {
-            if (!meal.ingredients) {
-                meal.ingredients = [];
-            }
-            meal.ingredients.push({
-                id: data,  // The API returns just the ID, similar to meals
-                name: name,
-                weight: 0
-            });
-            // Update selectedMeal to match the current meal state
-            selectedMeal = meal;
-        }
-        
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding ingredient: ' + error.message);
     }
@@ -357,16 +313,7 @@ async function modifyIngredientWeight() {
             throw new Error('Failed to modify ingredient weight');
         }
 
-        // Update the ingredient weight in our local state
-        const meal = currentAdventure.meals.find(m => m.id === selectedMeal.id);
-        if (meal) {
-            const ingredient = meal.ingredients.find(i => i.id === ingredientId);
-            if (ingredient) {
-                ingredient.weight = parseInt(weight);
-            }
-        }
-        
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error modifying ingredient weight: ' + error.message);
     }
@@ -386,8 +333,8 @@ function updateAdventureDisplay() {
     // Update Crew Members
     const crewList = document.getElementById('crewMembersList');
     crewList.innerHTML = '';
-    if (currentAdventure.crew && Array.isArray(currentAdventure.crew)) {
-        currentAdventure.crew.forEach(member => {
+    if (currentAdventure.allCrewMembers && Array.isArray(currentAdventure.allCrewMembers)) {
+        currentAdventure.allCrewMembers.forEach(member => {
             if (member) {
                 const card = document.createElement('div');
                 card.className = 'crew-card';
@@ -400,8 +347,9 @@ function updateAdventureDisplay() {
                     <p>Height: ${member.height || 0} cm</p>
                     <p>Weight: ${member.weight || 0} kg</p>
                     <p>Gender: ${member.gender || 'Unknown'}</p>
-                    <p>Activity: ${member.activityLevel || member.activity || 'Unknown'}</p>
+                    <p>Activity: ${member.activity || 'Unknown'}</p>
                     <p>Strategy: ${member.strategy || 'Unknown'}</p>
+                    <p>Daily KCal Need: ${member.dailyKCalNeed || 0}</p>
                 `;
                 crewList.appendChild(card);
             }
@@ -411,9 +359,10 @@ function updateAdventureDisplay() {
     // Update Meals
     const mealsList = document.getElementById('mealsList');
     mealsList.innerHTML = '';
-    if (currentAdventure.meals && Array.isArray(currentAdventure.meals)) {
-        currentAdventure.meals.forEach(meal => {
-            if (meal && meal.id) {
+    if (currentAdventure.allChildren && Array.isArray(currentAdventure.allChildren)) {
+        currentAdventure.allChildren.forEach(mealData => {
+            if (mealData && mealData.child) {
+                const meal = mealData.child;
                 const card = document.createElement('div');
                 card.dataset.mealId = meal.id;
                 card.className = 'meal-card' + (selectedMeal && selectedMeal.id === meal.id ? ' selected' : '');
@@ -422,7 +371,9 @@ function updateAdventureDisplay() {
                         <h4>${meal.name || 'Unknown'}</h4>
                         <button class="remove-button" onclick="event.stopPropagation(); removeMeal('${meal.id}')">Remove</button>
                     </div>
-                    <p>${(meal.ingredients && Array.isArray(meal.ingredients) ? meal.ingredients.length : 0)} ingredients</p>
+                    <p>Weight: ${meal.weight || 0}g</p>
+                    <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'}</p>
+                    <p>${(meal.allChildren && Array.isArray(meal.allChildren) ? meal.allChildren.length : 0)} ingredients</p>
                 `;
                 card.onclick = () => selectMeal(meal);
                 mealsList.appendChild(card);
@@ -432,21 +383,26 @@ function updateAdventureDisplay() {
 
     // Update Selected Meal Details
     if (selectedMeal && selectedMeal.id) {
-        const meal = currentAdventure.meals && currentAdventure.meals.find(m => m && m.id === selectedMeal.id);
+        const meal = currentAdventure.allChildren && 
+            currentAdventure.allChildren.find(m => m.child && m.child.id === selectedMeal.id)?.child;
         if (meal) {
             document.getElementById('selectedMealName').textContent = meal.name || 'Unknown';
             const ingredientsList = document.getElementById('selectedMealIngredients');
             ingredientsList.innerHTML = '';
-            if (meal.ingredients && Array.isArray(meal.ingredients)) {
-                meal.ingredients.forEach(ingredient => {
-                    if (ingredient && ingredient.id) {
+            if (meal.allChildren && Array.isArray(meal.allChildren)) {
+                meal.allChildren.forEach(ingredientData => {
+                    if (ingredientData && ingredientData.child) {
+                        const ingredient = ingredientData.child;
                         const item = document.createElement('div');
                         item.className = 'ingredient-item';
                         item.dataset.ingredientId = ingredient.id;
                         item.innerHTML = `
                             <div class="ingredient-content">
                                 <span class="ingredient-name">${ingredient.name || 'Unknown'}</span>
-                                <span class="ingredient-weight">${ingredient.weight || 0}g</span>
+                                <span class="ingredient-details">
+                                    <span class="ingredient-weight">Weight: ${ingredientData.recipeWeight || 0}g</span>
+                                    <span class="ingredient-ratio">Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</span>
+                                </span>
                             </div>
                             <button class="remove-button" onclick="event.stopPropagation(); removeIngredient('${ingredient.id}')">Remove</button>
                         `;
@@ -572,10 +528,6 @@ async function removeCrewMember(crewId) {
         return;
     }
 
-    if (!confirm('Are you sure you want to remove this crew member?')) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}/crew/${crewId}`, {
             method: 'DELETE'
@@ -585,9 +537,7 @@ async function removeCrewMember(crewId) {
             throw new Error('Failed to remove crew member');
         }
 
-        // Remove from current adventure's crew array
-        currentAdventure.crew = currentAdventure.crew.filter(c => c.id !== crewId);
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error removing crew member: ' + error.message);
     }
@@ -600,12 +550,8 @@ async function removeMeal(mealId) {
         return;
     }
 
-    if (!confirm('Are you sure you want to remove this meal?')) {
-        return;
-    }
-
     try {
-        const response = await fetch(`${API_BASE_URL}/meals/${mealId}`, {
+        const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}/meals/${mealId}`, {
             method: 'DELETE'
         });
 
@@ -613,12 +559,10 @@ async function removeMeal(mealId) {
             throw new Error('Failed to remove meal');
         }
 
-        // Remove from current adventure's meals array
-        currentAdventure.meals = currentAdventure.meals.filter(m => m.id !== mealId);
         if (selectedMeal && selectedMeal.id === mealId) {
             selectedMeal = null;
         }
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error removing meal: ' + error.message);
     }
@@ -631,10 +575,6 @@ async function removeIngredient(ingredientId) {
         return;
     }
 
-    if (!confirm('Are you sure you want to remove this ingredient?')) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE_URL}/meals/${selectedMeal.id}/ingredients/${ingredientId}`, {
             method: 'DELETE'
@@ -644,13 +584,7 @@ async function removeIngredient(ingredientId) {
             throw new Error('Failed to remove ingredient');
         }
 
-        // Remove from selected meal's ingredients array
-        const meal = currentAdventure.meals.find(m => m.id === selectedMeal.id);
-        if (meal) {
-            meal.ingredients = meal.ingredients.filter(i => i.id !== ingredientId);
-            selectedMeal = meal;
-        }
-        updateAdventureDisplay();
+        await refreshCurrentAdventure();
     } catch (error) {
         alert('Error removing ingredient: ' + error.message);
     }

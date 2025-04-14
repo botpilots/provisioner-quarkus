@@ -214,9 +214,36 @@ button:hover {
     margin-top: 10px;
 }
 
+.ingredient-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+}
+
+.ingredient-name {
+    font-weight: bold;
+    color: #333;
+    min-width: 100px;
+}
+
+.ingredient-details {
+    display: flex;
+    gap: 15px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.ingredient-weight, .ingredient-ratio {
+    white-space: nowrap;
+}
+
 .ingredient-item {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     padding: 8px;
     border-bottom: 1px solid #eee;
 }
@@ -225,13 +252,14 @@ button:hover {
     border-bottom: none;
 }
 
-.ingredient-name {
-    font-weight: bold;
-    color: #333;
+.ingredient-item .remove-button {
+    padding: 4px 8px;
+    font-size: 0.8em;
+    visibility: hidden;
 }
 
-.ingredient-weight {
-    color: #666;
+.ingredient-item:hover .remove-button {
+    visibility: visible;
 }
 
 /* Selected States */
@@ -278,28 +306,4 @@ button:hover {
 .card-header .remove-button {
     padding: 4px 8px;
     font-size: 0.8em;
-}
-
-.ingredient-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1;
-}
-
-.ingredient-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.ingredient-item .remove-button {
-    padding: 4px 8px;
-    font-size: 0.8em;
-    visibility: hidden;
-}
-
-.ingredient-item:hover .remove-button {
-    visibility: visible;
 } 
