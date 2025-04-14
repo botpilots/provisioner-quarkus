@@ -5,6 +5,7 @@ import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.KCalCalculation
 import io.hulsbo.util.model.CrewMember.PhysicalActivity;
 import io.hulsbo.util.model.SafeID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
+import io.quarkus.logging.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -210,8 +211,12 @@ public class Adventure extends BaseClass {
 		return String.format("%.1f", ratio * 100);
 	}
 
-	public String removeCrewMember(SafeID id) {
+	public void removeCrewMember(SafeID id) {
 		crewMemberMap.remove(id);
-		return Manager.removeCrewMember(id);
+		if (crewMemberMap.containsKey(id)) {
+			throw new IllegalArgumentException("Crew member with id " + id + " could not be removed from adventure.");
+		} else {
+			Log.info("Crew member with id " + id + " was successfully removed from adventure.");
+		}
 	}
 }

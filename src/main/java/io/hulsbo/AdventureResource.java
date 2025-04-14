@@ -47,6 +47,7 @@ public class AdventureResource {
 		return Response.ok(adventure).build();
 	}
 
+	// NOTE: Crewmembers are not added to the index currently.
 	@POST
 	@Path("/{id}/crew")
 	public Response addCrewMember(
@@ -63,7 +64,6 @@ public class AdventureResource {
 		if (adventure == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-
 		adventure.putCrewMember(name, age, height, weight, gender, activity, strategy);
 		return Response.ok(adventure).build();
 	}
