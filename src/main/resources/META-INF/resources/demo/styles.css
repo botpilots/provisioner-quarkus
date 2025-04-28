@@ -26,19 +26,42 @@ h1 {
     color: #333;
 }
 
-.main-content {
+/* New Top Section Styling */
+.top-section {
     display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.top-section .form-group {
+    flex: 1; /* Allow groups to grow */
+    min-width: 300px; /* Minimum width before wrapping */
+}
+
+/* Adventure Info Section Styling */
+.adventure-info-section {
+    margin-bottom: 20px;
+    /* Inherits .section styles */
+}
+
+/* Main Content Area (Remaining Inputs) */
+.main-content {
+    display: flex; /* Keep flex for potential future use */
     gap: 20px;
 }
 
 .left-column {
-    flex: 1;
-    max-width: 600px;
+    flex: 1; /* Let the left column take available space */
+    /* Remove max-width or adjust as needed */
+    /* max-width: 600px; */
 }
 
 .right-column {
-    flex: 1;
-    min-width: 600px;
+     /* Hide the empty right column for now */
+    display: none;
+    /* flex: 1; */
+    /* min-width: 600px; */
 }
 
 .section {
@@ -127,10 +150,12 @@ button:hover {
 .info-group.two-column {
     display: flex;
     gap: 20px;
+    flex-wrap: wrap; /* Allow columns to wrap */
 }
 
 .info-column {
     flex: 1;
+    min-width: 300px; /* Minimum width for info columns */
 }
 
 .info-item {
@@ -364,6 +389,11 @@ button:hover {
     display: flex;
     gap: 20px;
     margin-bottom: 15px; /* Add space below the columns */
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.meal-details .info-column {
+    min-width: 250px; /* Adjust min-width for meal details columns */
 }
 
 .ingredients-section {
@@ -372,4 +402,13 @@ button:hover {
 
 .ingredients-section h3 {
     margin-bottom: 8px;
+}
+
+/* Ingredient Details Section */
+.ingredient-details-section {
+    /* Inherits .info-group and .two-column styles */
+}
+
+.ingredient-details-section .info-column {
+    min-width: 250px; /* Consistent min-width */
 } 

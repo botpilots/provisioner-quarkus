@@ -9,28 +9,142 @@
 <body>
     <div class="container">
         <h1>Provisioner API Demo</h1>
+
+        <!-- Top Section for Adventure Creation/Selection -->
+        <div class="top-section">
+            <!-- Create Adventure -->
+            <div class="form-group">
+                <h3>Create Adventure</h3>
+                <input type="text" id="adventureName" placeholder="Adventure Name">
+                <button onclick="createAdventure()">Create</button>
+            </div>
+
+            <!-- Adventure Selection -->
+            <div class="form-group">
+                <h3>Select Adventure</h3>
+                <div class="adventure-selection">
+                    <select id="adventureSelect" onchange="selectAdventure(this.value)">
+                        <option value="">Select an adventure...</option>
+                    </select>
+                    <button onclick="removeSelectedAdventure()" class="remove-button">Remove Adventure</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adventure Information Section -->
+        <div class="adventure-info-section section">
+            <h2>Adventure Information</h2>
+            <div id="adventureInfo">
+                <div class="info-group two-column">
+                    <div class="info-column">
+                        <h3>Basic Info</h3>
+                        <div class="info-item">
+                            <span class="label">Name:</span>
+                            <span id="adventureNameDisplay" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Duration:</span>
+                            <span id="adventureDuration" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Crew size:</span>
+                            <span id="adventureCrewSize" class="value">-</span>
+                        </div>
+                        <h3>Calc. values</h3>
+                        <div class="info-item">
+                            <span class="label">kCal need:</span>
+                            <span id="adventureCrewDailyKcalNeed" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Food weight:</span>
+                            <span id="adventureWeight" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Food ED:</span>
+                            <span id="adventureEnergyDensity" class="value">-</span>
+                        </div>
+                    </div>
+                    <div class="info-column">
+                        <h3>Nutrients info</h3>
+                        <div id="adventureNutrients" class="nutrients-list"></div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3>Crew Members</h3>
+                    <div id="crewMembersList" class="list-container"></div>
+                </div>
+
+                <div class="info-group">
+                    <h3>Meals</h3>
+                    <div id="mealsList" class="list-container"></div>
+                </div>
+
+                <div class="info-group">
+                    <h3>Selected Meal Details</h3>
+                    <div id="selectedMealDetails" class="meal-details info-group">
+                        <div class="two-column-layout">
+                            <div class="info-column">
+                                <h3>Basic Info</h3>
+                                <div class="info-item">
+                                    <span class="label">Name:</span>
+                                    <span id="selectedMealName" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Weight:</span>
+                                    <span id="selectedMealWeight" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Energy Density:</span>
+                                    <span id="selectedMealEnergyDensity" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Ratio in Adventure:</span>
+                                    <span id="selectedMealRatio" class="value">-</span>
+                                </div>
+                            </div>
+                            <div class="info-column">
+                                <h3>Nutrients info</h3>
+                                <div id="selectedMealNutrients" class="nutrients-list"></div>
+                            </div>
+                        </div>
+                        <div class="ingredients-section">
+                            <h3>Ingredients</h3>
+                            <div id="selectedMealIngredients" class="ingredients-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3>Selected Ingredient Details</h3>
+                    <div id="selectedIngredientDetails" class="ingredient-details-section info-group two-column" style="display: none;">
+                        <div class="info-column">
+                            <h3>Basic Info</h3>
+                            <div class="info-item">
+                                <span class="label">Name:</span>
+                                <span id="selectedIngredientName" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Weight in Meal:</span>
+                                <span id="selectedIngredientWeight" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Ratio in Meal:</span>
+                                <span id="selectedIngredientRatio" class="value">-</span>
+                            </div>
+                        </div>
+                        <div class="info-column">
+                            <h3>Nutrients info</h3>
+                            <div id="selectedIngredientNutrients" class="nutrients-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="main-content">
             <!-- Left Column - Inputs -->
             <div class="left-column">
-                <!-- Create Adventure -->
-                <div class="form-group">
-                    <h3>Create Adventure</h3>
-                    <input type="text" id="adventureName" placeholder="Adventure Name">
-                    <button onclick="createAdventure()">Create</button>
-                </div>
-
-                <!-- Adventure Selection -->
-                <div class="form-group">
-                    <h3>Select Adventure</h3>
-                    <div class="adventure-selection">
-                        <select id="adventureSelect" onchange="selectAdventure(this.value)">
-                            <option value="">Select an adventure...</option>
-                        </select>
-                        <button onclick="removeSelectedAdventure()" class="remove-button">Remove Adventure</button>
-                    </div>
-                </div>
-
                 <!-- Add Crew Member -->
                 <div class="form-group">
                     <h3>Add Crew Member</h3>
@@ -108,118 +222,9 @@
                 </div>
             </div>
 
-            <!-- Right Column - Display -->
+            <!-- Right Column - Display (Now potentially empty or for other content) -->
             <div class="right-column">
-                <!-- Adventure Info -->
-                <div class="section">
-                    <h2>Adventure Information</h2>
-                    <div id="adventureInfo">
-                        <div class="info-group two-column">
-                            <div class="info-column">
-                                <h3>Basic Info</h3>
-                                <div class="info-item">
-                                    <span class="label">Name:</span>
-                                    <span id="adventureNameDisplay" class="value">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Duration:</span>
-                                    <span id="adventureDuration" class="value">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Crew size:</span>
-                                    <span id="adventureCrewSize" class="value">-</span>
-                                </div>
-								<h3>Calc. values</h3>
-                                <div class="info-item">
-                                    <span class="label">kCal need:</span>
-                                    <span id="adventureCrewDailyKcalNeed" class="value">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Food weight:</span>
-                                    <span id="adventureWeight" class="value">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Food ED:</span>
-                                    <span id="adventureEnergyDensity" class="value">-</span>
-                                </div>
-                            </div>
-                            <div class="info-column">
-                                <h3>Nutrients info</h3>
-                                <div id="adventureNutrients" class="nutrients-list"></div>
-                            </div>
-                        </div>
-
-                        <div class="info-group">
-                            <h3>Crew Members</h3>
-                            <div id="crewMembersList" class="list-container"></div>
-                        </div>
-
-                        <div class="info-group">
-                            <h3>Meals</h3>
-                            <div id="mealsList" class="list-container"></div>
-                        </div>
-
-                        <div class="info-group">
-                            <h3>Selected Meal Details</h3>
-                            <div id="selectedMealDetails" class="meal-details info-group">
-                                <div class="two-column-layout">
-                                    <div class="info-column">
-                                        <h3>Basic Info</h3>
-                                        <div class="info-item">
-                                            <span class="label">Name:</span>
-                                            <span id="selectedMealName" class="value">-</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="label">Weight:</span>
-                                            <span id="selectedMealWeight" class="value">-</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="label">Energy Density:</span>
-                                            <span id="selectedMealEnergyDensity" class="value">-</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="label">Ratio in Adventure:</span>
-                                            <span id="selectedMealRatio" class="value">-</span>
-                                        </div>
-                                    </div>
-                                    <div class="info-column">
-                                        <h3>Nutrients info</h3>
-                                        <div id="selectedMealNutrients" class="nutrients-list"></div>
-                                    </div>
-                                </div>
-                                <div class="ingredients-section">
-                                    <h3>Ingredients</h3>
-                                    <div id="selectedMealIngredients" class="ingredients-list"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-group">
-                            <h3>Selected Ingredient Details</h3>
-                            <div id="selectedIngredientDetails" class="ingredient-details-section info-group two-column" style="display: none;">
-                                <div class="info-column">
-                                    <h3>Basic Info</h3>
-                                    <div class="info-item">
-                                        <span class="label">Name:</span>
-                                        <span id="selectedIngredientName" class="value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="label">Weight in Meal:</span>
-                                        <span id="selectedIngredientWeight" class="value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="label">Ratio in Meal:</span>
-                                        <span id="selectedIngredientRatio" class="value">-</span>
-                                    </div>
-                                </div>
-                                <div class="info-column">
-                                    <h3>Nutrients info</h3>
-                                    <div id="selectedIngredientNutrients" class="nutrients-list"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- This column is now empty, we might remove it or repurpose it later -->
             </div>
         </div>
     </div>
