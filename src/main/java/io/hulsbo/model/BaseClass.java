@@ -78,7 +78,7 @@ public abstract class BaseClass {
      * Recalculates the nutrientsMap() based on childMap and ratiosMap
      * This method should be run if childMap has been updated.
      */
-    protected void setNutrientsMap() {
+    protected void setNutrientsMapAndWeights() {
         Set<String> nutrients = nutrientsMap.keySet();
 
         // Reset this baseclass nutrientsMap
@@ -197,7 +197,7 @@ public abstract class BaseClass {
         childMap.put(newChild.getId(), newChildWrapper);
         // NOTE: Registration in Manager is done in constructor.
         updateNameIndex();
-        setNutrientsMap();
+        setNutrientsMapAndWeights();
         return newChild.getId();
     }
 
@@ -216,7 +216,7 @@ public abstract class BaseClass {
         ChildWrapper childWrapper = childMap.get(key);
         childWrapper.setRatio(newWeightedValue);
         childMap.put(key, childWrapper);
-        setNutrientsMap();
+        setNutrientsMapAndWeights();
     }
 
     /**
@@ -234,7 +234,7 @@ public abstract class BaseClass {
         ChildWrapper childWrapper = childMap.get(key);
         childWrapper.setRecipeWeight(newRecipeWeight);
         childMap.put(key, childWrapper);
-        setNutrientsMap();
+        setNutrientsMapAndWeights();
     }
 
     /**
@@ -253,7 +253,7 @@ public abstract class BaseClass {
         childWrapper.setChild(newChild);
         childMap.put(key, childWrapper);
         updateNameIndex();
-        setNutrientsMap();
+        setNutrientsMapAndWeights();
     }
 
 
@@ -282,7 +282,7 @@ public abstract class BaseClass {
         if (wasRemoved != null) {
             updateNameIndex();
             scaleEntriesOnRemoval(wasRemoved.getRatio());
-            setNutrientsMap();
+            setNutrientsMapAndWeights();
             return "Child " + wasRemoved.getChild().getName() + " was successfully removed.";
         } else {
             throw new NullPointerException("The child of " +

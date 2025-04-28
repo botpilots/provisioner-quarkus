@@ -56,8 +56,8 @@ public class Adventure extends BaseClass {
 		}
 	}
 
-	public void setNutrientsMap() {
-		super.setNutrientsMap();
+	public void setNutrientsMapAndWeights() {
+		super.setNutrientsMapAndWeights();
 		setCrewDailyKcalNeed();
 		setMealAndIngredientWeights();
 	}
@@ -111,9 +111,9 @@ public class Adventure extends BaseClass {
 			System.out.println();
 			System.out.printf("%25s %s %n", "Crew member " + i + ":", crewMember.getName());
 			System.out.printf("%25s %s %n", "Gender:", crewMember.getGender().toString().toLowerCase());
-			System.out.printf("%25s %s %n", "Age:", crewMember.getAge());
+			System.out.printf("%25s %d %n", "Age:", crewMember.getAge());
 			System.out.printf("%25s %s %n", "Activity level:", crewMember.getActivity().toString().toLowerCase());
-			System.out.printf("%25s %.0f KCal %n", "Daily KCal need:", crewMember.getDailyKCalNeed());
+			System.out.printf("%25s %d KCal %n", "Daily KCal need:", crewMember.getDailyKCalNeed());
 
 			i++;
 		}
@@ -122,7 +122,7 @@ public class Adventure extends BaseClass {
 
 		System.out.println();
 
-		System.out.printf("Meals for %d days:".toUpperCase(), days);
+		System.out.println("MEALS FOR " + days + " DAYS:");
 		System.out.println();
 		System.out.println();
 		childMap.forEach((key, value) -> {

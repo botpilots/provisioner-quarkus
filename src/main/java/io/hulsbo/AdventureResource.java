@@ -143,4 +143,5 @@ public class AdventureResource {
 		adventure.getInfo();
 		return Response.ok("Adventure info printed to console").build();
 	}
+
 }

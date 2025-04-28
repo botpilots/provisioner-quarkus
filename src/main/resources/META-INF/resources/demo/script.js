@@ -50,11 +50,14 @@ async function refreshCurrentAdventure() {
             throw new Error('Failed to fetch adventure details');
         }
         
+		// Only update if response has changed.
         const newData = await response.json();
         if (hasDataChanged(newData, lastAdventureData)) {
             lastAdventureData = newData;
             currentAdventure = newData;
             updateAdventureDisplay();
+			// Print for debug purposes.
+			console.log(currentAdventure);
         }
     } catch (error) {
         console.error('Error refreshing adventure:', error);
@@ -329,6 +332,11 @@ function updateAdventureDisplay() {
     document.getElementById('adventureInfo').style.display = 'block';
     document.getElementById('adventureNameDisplay').textContent = currentAdventure.name || '';
     document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 0} days`;
+	document.getElementById('adventureCrewSize').textContent = `${currentAdventure.crewSize || 0} persons`;
+	document.getElementById('adventureCrewDailyKcalNeed').textContent = `${currentAdventure.crewDailyKcalNeed || 0} kCal / day`;
+	document.getElementById('adventureWeight').textContent = `${currentAdventure.weight || 0} kg`;
+	document.getElementById('adventureEnergyDensity').textContent = `${currentAdventure.formattedEnergyDensity || 0} kCal / kg`;
+
 
     // Update Crew Members
     const crewList = document.getElementById('crewMembersList');
