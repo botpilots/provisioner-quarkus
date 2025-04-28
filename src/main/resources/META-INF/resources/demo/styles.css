@@ -124,20 +124,33 @@ button:hover {
     background-color: #fafafa;
 }
 
+.info-group.two-column {
+    display: flex;
+    gap: 20px;
+}
+
+.info-column {
+    flex: 1;
+}
+
 .info-item {
     display: flex;
+    align-items: baseline;
     margin-bottom: 8px;
 }
 
 .label {
     font-weight: bold;
-    width: 120px;
+    width: 150px;
     color: #666;
+    text-align: left;
+    padding-right: 10px;
 }
 
 .value {
     flex: 1;
     color: #333;
+    background-color: #fff;
 }
 
 /* List Container Styles */
@@ -212,6 +225,11 @@ button:hover {
 
 .ingredients-list {
     margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 5px;
+    border-radius: 4px;
 }
 
 .ingredient-content {
@@ -220,6 +238,7 @@ button:hover {
     align-items: center;
     flex: 1;
     gap: 10px;
+    font-size: 0.8em;
 }
 
 .ingredient-name {
@@ -260,6 +279,11 @@ button:hover {
 
 .ingredient-item:hover .remove-button {
     visibility: visible;
+}
+
+.ingredient-item.selected {
+    background-color: #e8f5e9;
+    border-left: 3px solid #4CAF50;
 }
 
 /* Selected States */
@@ -306,4 +330,46 @@ button:hover {
 .card-header .remove-button {
     padding: 4px 8px;
     font-size: 0.8em;
+}
+
+/* Nutrient List Styles */
+.nutrients-list {
+    margin-top: 10px;
+}
+
+.nutrient-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.nutrient-item:last-child {
+    border-bottom: none;
+}
+
+.nutrient-name {
+    color: #555;
+    text-transform: capitalize;
+}
+
+.nutrient-value {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Specific layout for meal details */
+.meal-details .two-column-layout {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px; /* Add space below the columns */
+}
+
+.ingredients-section {
+    margin-top: 15px; /* Add space above ingredients list */
+}
+
+.ingredients-section h3 {
+    margin-bottom: 8px;
 } 
