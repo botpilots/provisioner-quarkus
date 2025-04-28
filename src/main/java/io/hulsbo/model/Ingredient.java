@@ -15,5 +15,14 @@ public class Ingredient extends BaseClass {
         }
     }
 
+    // Override updateAndPropagate
+    @Override
+    protected void updateAndPropagate() {
+        // 1. Perform Ingredient-specific recalculations *first* (if any)
+        // Currently none needed.
+
+        // 2. Then, call the base implementation to propagate upwards
+        super.updateAndPropagate();
+    }
 }
 

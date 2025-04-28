@@ -63,10 +63,6 @@ public class ManualTest {
         dinner.modifyWeightOfIngredient(rice.getId(), 200.0);
         dinner.modifyWeightOfIngredient(beans.getId(), 150.0);
 
-        // Calculate weights
-        adventure.setNutrientsMapAndWeights();  // This will calculate energy density and weights for meals and ingredients.
-        adventure.setWeight();        // This will calculate total weight based on kcal needs and days
-
         // Print adventure info
         adventure.getInfo();
     }

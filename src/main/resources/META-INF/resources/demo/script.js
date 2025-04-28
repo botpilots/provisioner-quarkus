@@ -381,6 +381,7 @@ function updateAdventureDisplay() {
                     </div>
                     <p>Weight: ${meal.weight || 0}g</p>
                     <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'}</p>
+                    <p>Ratio: ${Math.round(mealData.ratio*100) + ' %' || '0.0'}</p>
                     <p>${(meal.allChildren && Array.isArray(meal.allChildren) ? meal.allChildren.length : 0)} ingredients</p>
                 `;
                 card.onclick = () => selectMeal(meal);

@@ -50,5 +50,18 @@ public SafeID putChild(Ingredient newIngredient) {
             modifyRatio(key, weightedValue);
         }
 
+        // Trigger update propagation
+        this.updateAndPropagate();
+    }
+
+    // Override updateAndPropagate
+    @Override
+    protected void updateAndPropagate() {
+        // 1. Perform Meal-specific recalculations *first*
+        this.updateNameIndex(); // Ensure name index is up-to-date
+        this.setNutrientsMapAndWeights(); // Recalculates based on ingredient children
+
+        // 2. Then, call the base implementation to propagate upwards
+        super.updateAndPropagate();
     }
 }

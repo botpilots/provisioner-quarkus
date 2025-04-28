@@ -10,7 +10,7 @@ import io.quarkus.logging.Log;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Adventure extends BaseClass {
+public class Adventure extends BaseClass  {
 	private final Map<SafeID, CrewMember> crewMemberMap = new LinkedHashMap<>();
 	private double crewDailyKcalNeed;
 	private int days;
@@ -78,6 +78,9 @@ public class Adventure extends BaseClass {
 		crewMemberMap.put(newCrewMember.getId(), newCrewMember);
 		// NOTE: Registration in Manager is done in constructor.
 		setCrewDailyKcalNeed();
+
+		// Trigger update propagation
+		this.updateAndPropagate();
 	}
 
 	public void setCrewDailyKcalNeed() {
@@ -95,6 +98,9 @@ public class Adventure extends BaseClass {
 		} else {
 			throw new IllegalArgumentException("Days must be one or more.");
 		}
+
+		// Trigger update propagation
+		this.updateAndPropagate();
 	}
 
 	public int getDays() {
@@ -218,5 +224,21 @@ public class Adventure extends BaseClass {
 		} else {
 			Log.info("Crew member with id " + id + " was successfully removed from adventure.");
 		}
+
+		// Trigger update propagation
+		this.updateAndPropagate();
+	}
+
+	// Override updateAndPropagate
+	@Override
+	protected void updateAndPropagate() {
+		// 1. Perform Adventure-specific recalculations *first*
+		this.updateNameIndex(); // Ensure name index is up-to-date
+		// Note: setCrewDailyKcalNeed is implicitly called by put/remove crew member before this
+		// Note: setWeight is implicitly called by setNutrientsMapAndWeights
+		this.setNutrientsMapAndWeights(); // Updates energyDensity, mealWeights, ingredientWeights based on children
+
+		// 2. Then, call the base implementation to propagate upwards (if Adventures could be children)
+		super.updateAndPropagate();
 	}
 }
