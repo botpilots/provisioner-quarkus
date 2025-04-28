@@ -6,12 +6,30 @@ let adventures = [];  // Store all adventures
 let currentAdventure = null;
 let selectedMeal = null;
 let selectedIngredient = null; // Add state for selected ingredient
+let ingredientToModify = null; // Temp store for ingredient being modified
 let lastAdventureData = null;  // Store last fetched adventure data for comparison
 
 // DOM elements
 const adventuresList = document.getElementById('adventures-list');
 const crewMembersList = document.getElementById('crew-members-list');
 const baseClassesList = document.getElementById('base-classes-list');
+const addCrewModal = document.getElementById('addCrewModal'); // Modal element
+const addMealModal = document.getElementById('addMealModal');
+const addIngredientModal = document.getElementById('addIngredientModal');
+const setDaysModal = document.getElementById('setDaysModal'); 
+const modifyIngredientModal = document.getElementById('modifyIngredientModal'); // Modify modal
+const modalMealNameInput = document.getElementById('modalMealName');
+const modalIngredientNameInput = document.getElementById('modalIngredientName');
+const modalDaysInput = document.getElementById('modalDays'); 
+const modalIngredientModifyName = document.getElementById('modalIngredientModifyName'); // Modify modal name display
+const modalIngredientModifyId = document.getElementById('modalIngredientModifyId'); // Modify modal hidden ID
+const modalIngredientWeightInput = document.getElementById('modalIngredientWeight'); // Modify modal weight input
+const modalIngredientNutrientsDiv = document.getElementById('modalIngredientNutrients'); // Modify modal nutrient display
+const adventureTitle = document.getElementById('adventureTitle');
+const selectedMealTitle = document.getElementById('selectedMealTitle');
+const selectedIngredientTitle = document.getElementById('selectedIngredientTitle');
+const addIngredientButton = document.getElementById('addIngredientButton');
+const setDaysButton = document.getElementById('setDaysButton'); 
 
 // Helper function to make API calls
 async function makeApiCall(url, method = 'GET', body = null) {
@@ -74,10 +92,26 @@ function hasDataChanged(newData, oldData) {
 async function refreshCurrentAdventure() {
     if (!currentAdventure) return;
     
+    const adventureId = currentAdventure.id; // Store id in case currentAdventure is replaced
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}`);
+        const response = await fetch(`${API_BASE_URL}/adventures/${adventureId}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch adventure details');
+            // Handle case where adventure might have been deleted
+            if (response.status === 404) {
+                 console.warn(`Adventure with ID ${adventureId} not found.`);
+                 // Remove from local state and update UI
+                 adventures = adventures.filter(a => a.id !== adventureId);
+                 currentAdventure = null;
+                 selectedMeal = null;
+                 selectedIngredient = null;
+                 lastAdventureData = null;
+                 updateAdventureDropdown();
+                 updateAdventureDisplay(); 
+                 return;
+            } else {
+                 throw new Error(`Failed to fetch adventure details (status: ${response.status})`);
+            }
         }
         
 		// Only update if response has changed.
@@ -85,12 +119,26 @@ async function refreshCurrentAdventure() {
         if (hasDataChanged(newData, lastAdventureData)) {
             lastAdventureData = newData;
             currentAdventure = newData;
+
+             // Re-select meal/ingredient if they still exist in the new data
+            if (selectedMeal && selectedMeal.child) {
+                 const updatedMealData = currentAdventure.allChildren.find(m => m.child && m.child.id === selectedMeal.child.id);
+                 selectedMeal = updatedMealData || null;
+                 if (selectedMeal && selectedIngredient && selectedIngredient.child) {
+                     const updatedIngredientData = selectedMeal.child.allChildren.find(i => i.child && i.child.id === selectedIngredient.child.id);
+                     selectedIngredient = updatedIngredientData || null;
+                 }
+             }
+
             updateAdventureDisplay();
 			// Print for debug purposes.
-			console.log(currentAdventure);
+			// console.log(currentAdventure);
         }
     } catch (error) {
         console.error('Error refreshing adventure:', error);
+        // Optionally reset state if refresh fails critically
+        // currentAdventure = null; 
+        // updateAdventureDisplay(); 
     }
 }
 
@@ -119,9 +167,9 @@ async function createAdventure() {
         updateAdventureDropdown();
         
         // Select the new adventure
-        currentAdventure = data;
         document.getElementById('adventureSelect').value = data.id;
-        await refreshCurrentAdventure();
+        await selectAdventure(data.id); // Call selectAdventure to load and display
+
     } catch (error) {
         alert('Error creating adventure: ' + error.message);
     }
@@ -157,7 +205,7 @@ async function selectAdventure(adventureId) {
         selectedMeal = null;
         selectedIngredient = null; // Reset selected ingredient
         lastAdventureData = null;
-        updateAdventureDropdown();
+        updateAdventureDropdown(); // Reset dropdown selection if fetch fails
         updateAdventureDisplay();
     }
 }
@@ -169,6 +217,9 @@ async function removeSelectedAdventure() {
         return;
     }
 
+    const confirmRemove = confirm(`Are you sure you want to remove adventure "${currentAdventure.name}"?`);
+    if (!confirmRemove) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}`, {
             method: 'DELETE'
@@ -178,7 +229,8 @@ async function removeSelectedAdventure() {
             throw new Error('Failed to remove adventure');
         }
 
-        adventures = adventures.filter(a => a.id !== currentAdventure.id);
+        const removedId = currentAdventure.id;
+        adventures = adventures.filter(a => a.id !== removedId);
         currentAdventure = null;
         selectedMeal = null;
         selectedIngredient = null; // Reset selected ingredient
@@ -193,34 +245,147 @@ async function removeSelectedAdventure() {
 // Update Adventure Dropdown
 function updateAdventureDropdown() {
     const select = document.getElementById('adventureSelect');
+    const currentSelection = select.value;
     select.innerHTML = '<option value="">Select an adventure...</option>';
     
     adventures.forEach(adventure => {
         const option = document.createElement('option');
         option.value = adventure.id;
         option.textContent = adventure.name;
-        if (currentAdventure && adventure.id === currentAdventure.id) {
-            option.selected = true;
-        }
         select.appendChild(option);
     });
+
+    // Try to preserve selection if possible
+    if (adventures.some(a => a.id.toString() === currentSelection)) {
+        select.value = currentSelection;
+    } else if (currentAdventure) {
+         select.value = currentAdventure.id;
+    } else {
+        select.value = '';
+    }
 }
+
+// --- Modal Management ---
+function openAddCrewModal() {
+    if (!currentAdventure) {
+        alert('Please select an adventure first.');
+        return;
+    }
+    // Clear previous inputs (optional)
+    document.getElementById('modalCrewName').value = '';
+    document.getElementById('modalCrewAge').value = '30';
+    document.getElementById('modalCrewHeight').value = '175';
+    document.getElementById('modalCrewWeight').value = '70';
+    document.getElementById('modalCrewGender').value = 'MALE';
+    document.getElementById('modalCrewActivity').value = 'MODERATE';
+    document.getElementById('modalCrewStrategy').value = 'mifflin_st_jeor'; 
+
+    if(addCrewModal) addCrewModal.style.display = 'block';
+}
+
+function closeAddCrewModal() {
+    if(addCrewModal) addCrewModal.style.display = 'none';
+}
+
+function openAddMealModal() {
+     if (!currentAdventure) {
+        alert('Please select an adventure first.');
+        return;
+    }
+    if (modalMealNameInput) modalMealNameInput.value = ''; // Clear input
+    if (addMealModal) addMealModal.style.display = 'block';
+    if (modalMealNameInput) modalMealNameInput.focus(); // Focus input
+}
+
+function closeAddMealModal() {
+    if (addMealModal) addMealModal.style.display = 'none';
+}
+
+function openAddIngredientModal() {
+    if (!selectedMeal) {
+        alert('Please select a meal first.');
+        return;
+    }
+    if (modalIngredientNameInput) modalIngredientNameInput.value = ''; // Clear input
+    if (addIngredientModal) addIngredientModal.style.display = 'block';
+    if (modalIngredientNameInput) modalIngredientNameInput.focus(); // Focus input
+}
+
+function closeAddIngredientModal() {
+    if (addIngredientModal) addIngredientModal.style.display = 'none';
+}
+
+function openSetDaysModal() {
+    if (!currentAdventure) {
+        alert('Please select an adventure first.');
+        return;
+    }
+    // Set current value in modal
+    if (modalDaysInput) modalDaysInput.value = currentAdventure.days || 1;
+    if (setDaysModal) setDaysModal.style.display = 'block';
+    if (modalDaysInput) modalDaysInput.focus();
+}
+
+function closeSetDaysModal() {
+    if (setDaysModal) setDaysModal.style.display = 'none';
+}
+
+function openModifyIngredientModal(ingredientData) {
+    if (!ingredientData || !ingredientData.child) {
+        console.error('Invalid ingredient data for modification modal');
+        return;
+    }
+    ingredientToModify = ingredientData; // Store data temporarily
+    const ingredient = ingredientData.child;
+
+    if (modalIngredientModifyName) modalIngredientModifyName.textContent = ingredient.name || 'Unknown';
+    if (modalIngredientModifyId) modalIngredientModifyId.value = ingredient.id;
+    if (modalIngredientWeightInput) modalIngredientWeightInput.value = ingredientData.recipeWeight || 0;
+    
+    // Display current nutrients (read-only)
+    renderNutrients(ingredient.nutrientsMap, 'modalIngredientNutrients');
+
+    if (modifyIngredientModal) modifyIngredientModal.style.display = 'block';
+    if (modalIngredientWeightInput) modalIngredientWeightInput.focus(); // Focus weight input
+}
+
+function closeModifyIngredientModal() {
+    if (modifyIngredientModal) modifyIngredientModal.style.display = 'none';
+    ingredientToModify = null; // Clear temporary data
+}
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    if (event.target == addCrewModal) {
+        closeAddCrewModal();
+    } else if (event.target == addMealModal) {
+        closeAddMealModal();
+    } else if (event.target == addIngredientModal) {
+        closeAddIngredientModal();
+    } else if (event.target == setDaysModal) {
+        closeSetDaysModal();
+    } else if (event.target == modifyIngredientModal) { // Close Modify Ingredient modal
+        closeModifyIngredientModal();
+    }
+}
+// --- End Modal Management ---
 
 // Crew Member Management
 async function addCrewMember() {
     if (!currentAdventure) {
-        alert('Please create an adventure first');
+        alert('Please select an adventure first');
         return;
     }
 
+    // Read values from modal inputs
     const params = new URLSearchParams({
-        name: document.getElementById('crewName').value,
-        age: document.getElementById('crewAge').value,
-        height: document.getElementById('crewHeight').value,
-        weight: document.getElementById('crewWeight').value,
-        gender: document.getElementById('crewGender').value,
-        activity: document.getElementById('crewActivity').value,
-        strategy: document.getElementById('crewStrategy').value
+        name: document.getElementById('modalCrewName').value,
+        age: document.getElementById('modalCrewAge').value,
+        height: document.getElementById('modalCrewHeight').value,
+        weight: document.getElementById('modalCrewWeight').value,
+        gender: document.getElementById('modalCrewGender').value,
+        activity: document.getElementById('modalCrewActivity').value,
+        strategy: document.getElementById('modalCrewStrategy').value
     });
 
     try {
@@ -235,20 +400,30 @@ async function addCrewMember() {
             throw new Error('Failed to add crew member');
         }
 
+        closeAddCrewModal(); // Close modal on success
         await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding crew member: ' + error.message);
+        // Optionally keep modal open on error, or close it:
+        // closeAddCrewModal(); 
     }
 }
 
 // Days Management
 async function setDays() {
     if (!currentAdventure) {
-        alert('Please create an adventure first');
+        // Modal shouldn't open if no adventure, but double-check
+        alert('Please select an adventure first');
         return;
     }
 
-    const days = document.getElementById('days').value;
+    const days = modalDaysInput.value; // Read from modal input
+    if (!days || days < 1) {
+        alert('Please enter a valid number of days (minimum 1).');
+        modalDaysInput.focus();
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}/days?days=${days}`, {
             method: 'PUT',
@@ -260,23 +435,27 @@ async function setDays() {
         if (!response.ok) {
             throw new Error('Failed to set days');
         }
-
+        
+        closeSetDaysModal(); // Close modal on success
         await refreshCurrentAdventure();
     } catch (error) {
         alert('Error setting days: ' + error.message);
+        // Optionally keep modal open
     }
 }
 
 // Meal Management
 async function addMeal() {
     if (!currentAdventure) {
-        alert('Please create an adventure first');
+        // Modal shouldn't open if no adventure, but double-check
+        alert('Please select an adventure first'); 
         return;
     }
 
-    const name = document.getElementById('mealName').value;
+    const name = modalMealNameInput.value.trim(); // Read from modal input
     if (!name) {
         alert('Please enter a meal name');
+        modalMealNameInput.focus(); // Focus the modal input field
         return;
     }
 
@@ -292,22 +471,26 @@ async function addMeal() {
             throw new Error('Failed to add meal');
         }
 
+        closeAddMealModal(); // Close modal on success
         await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding meal: ' + error.message);
+        // Optionally keep modal open
     }
 }
 
 // Ingredient Management
 async function addIngredient() {
     if (!currentAdventure || !selectedMeal) {
+         // Modal shouldn't open if no meal, but double-check
         alert('Please select a meal first');
         return;
     }
 
-    const name = document.getElementById('ingredientName').value;
+    const name = modalIngredientNameInput.value.trim(); // Read from modal input
     if (!name) {
         alert('Please enter an ingredient name');
+        modalIngredientNameInput.focus(); // Focus modal input
         return;
     }
 
@@ -323,73 +506,88 @@ async function addIngredient() {
             throw new Error('Failed to add ingredient');
         }
 
+        closeAddIngredientModal(); // Close modal on success
         await refreshCurrentAdventure();
     } catch (error) {
         alert('Error adding ingredient: ' + error.message);
+         // Optionally keep modal open
     }
 }
 
-async function modifyIngredientWeight() {
-    if (!currentAdventure || !selectedMeal || !selectedMeal.child) {
-        alert('Please select a meal first');
-        return;
-    }
-    if (!selectedIngredient || !selectedIngredient.child) { // Check if an ingredient is selected
-        alert('Please select an ingredient first');
-        return;
-    }
-
-    const weight = document.getElementById('ingredientWeight').value;
-    const mealId = selectedMeal.child.id; // Use correct meal ID
-    const ingredientId = selectedIngredient.child.id; // Use correct ingredient ID from state
+// NEW function to update ingredient via modal
+async function updateIngredient() {
+    const ingredientId = modalIngredientModifyId.value;
+    const newWeight = modalIngredientWeightInput.value;
 
     if (!ingredientId) {
-        alert('Could not determine the selected ingredient ID.');
+        alert('Error: Cannot identify ingredient to modify.');
+        return;
+    }
+    if (!selectedMeal || !selectedMeal.child) {
+        alert('Error: No meal selected.');
+        return;
+    }
+     if (!newWeight || newWeight < 1) {
+        alert('Please enter a valid weight (minimum 1).');
+        modalIngredientWeightInput.focus();
         return;
     }
 
+    const mealId = selectedMeal.child.id;
+
+    // --- IMPORTANT --- 
+    // Only send the WEIGHT update for now, as requested.
+    // Nutrient updates will be added later.
     try {
-        const response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients/${ingredientId}?weight=${weight}`, {
+        const response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients/${ingredientId}?weight=${newWeight}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             }
+            // NO BODY needed for this endpoint currently
         });
 
         if (!response.ok) {
             throw new Error('Failed to modify ingredient weight');
         }
 
+        closeModifyIngredientModal(); // Close modal on success
         await refreshCurrentAdventure();
     } catch (error) {
         alert('Error modifying ingredient weight: ' + error.message);
+        // Optionally keep modal open
     }
 }
 
 // UI Updates
 function updateAdventureDisplay() {
     const adventureInfoDiv = document.getElementById('adventureInfo');
+    const selectedMealSection = document.getElementById('selectedMealDetails').closest('.info-group'); // Get parent info-group
+    const selectedIngredientSection = document.getElementById('selectedIngredientDetails').closest('.info-group'); // Get parent info-group
     const selectedMealDetailsDiv = document.getElementById('selectedMealDetails');
     const selectedIngredientDetailsDiv = document.getElementById('selectedIngredientDetails');
 
     if (!currentAdventure) {
+        if (adventureTitle) adventureTitle.textContent = 'Adventure Information';
+        if (setDaysButton) setDaysButton.style.display = 'none'; // Hide Set Days button
         if (adventureInfoDiv) adventureInfoDiv.style.display = 'none';
-        // Clear all displays if no adventure is selected
+        if (selectedMealSection) selectedMealSection.style.display = 'none'; // Hide whole section
+        if (selectedIngredientSection) selectedIngredientSection.style.display = 'none'; // Hide whole section
+        if (addIngredientButton) addIngredientButton.style.display = 'none'; // Hide add ingredient button
+        // Clear basic info displays if no adventure is selected
         document.getElementById('adventureNameDisplay').textContent = '-';
         document.getElementById('adventureDuration').textContent = '-';
         document.getElementById('adventureCrewSize').textContent = '-';
         document.getElementById('adventureCrewDailyKcalNeed').textContent = '-';
         document.getElementById('adventureWeight').textContent = '-';
         document.getElementById('adventureEnergyDensity').textContent = '-';
-        renderNutrients(null, 'adventureNutrients');
-        document.getElementById('crewMembersList').innerHTML = '';
-        document.getElementById('mealsList').innerHTML = '';
-        if (selectedMealDetailsDiv) selectedMealDetailsDiv.style.display = 'none';
-        if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'none';
         return;
     }
 
-    if (adventureInfoDiv) adventureInfoDiv.style.display = 'block';
+    // --- Update Adventure Section --- 
+    if (adventureTitle) adventureTitle.textContent = `Adventure: ${currentAdventure.name || 'Unnamed'}`;
+    if (setDaysButton) setDaysButton.style.display = 'inline-block'; // Show Set Days button
+    if (adventureInfoDiv) adventureInfoDiv.style.display = 'block'; // Show the main info block
     
     // Update Adventure Basic Info
     document.getElementById('adventureNameDisplay').textContent = currentAdventure.name || '-';
@@ -405,7 +603,7 @@ function updateAdventureDisplay() {
     // Update Crew Members
     const crewList = document.getElementById('crewMembersList');
     crewList.innerHTML = '';
-    if (currentAdventure.allCrewMembers && Array.isArray(currentAdventure.allCrewMembers)) {
+    if (currentAdventure.allCrewMembers && Array.isArray(currentAdventure.allCrewMembers) && currentAdventure.allCrewMembers.length > 0) {
         currentAdventure.allCrewMembers.forEach(member => {
             if (member) {
                 const card = document.createElement('div');
@@ -413,7 +611,9 @@ function updateAdventureDisplay() {
                 card.innerHTML = `
                     <div class="card-header">
                         <h4>${member.name || 'Unknown'}</h4>
-                        <button class="remove-button" onclick="removeCrewMember('${member.id}')">Remove</button>
+                        <button class="remove-button" onclick="removeCrewMember('${member.id}')">
+                            <img src="/graphics/icons/trash.svg" alt="Remove" class="icon-button">
+                        </button>
                     </div>
                     <p>Age: ${member.age || 0}</p>
                     <p>Height: ${member.height || 0} cm</p>
@@ -426,12 +626,14 @@ function updateAdventureDisplay() {
                 crewList.appendChild(card);
             }
         });
+    } else {
+         crewList.innerHTML = '<p>No crew members added yet.</p>';
     }
 
     // Update Meals
     const mealsList = document.getElementById('mealsList');
     mealsList.innerHTML = '';
-    if (currentAdventure.allChildren && Array.isArray(currentAdventure.allChildren)) {
+    if (currentAdventure.allChildren && Array.isArray(currentAdventure.allChildren) && currentAdventure.allChildren.length > 0) {
         currentAdventure.allChildren.forEach(mealData => {
             if (mealData && mealData.child) {
                 const meal = mealData.child;
@@ -441,7 +643,9 @@ function updateAdventureDisplay() {
                 card.innerHTML = `
                     <div class="card-header">
                         <h4>${meal.name || 'Unknown'}</h4>
-                        <button class="remove-button" onclick="event.stopPropagation(); removeMeal('${meal.id}')">Remove</button>
+                        <button class="remove-button" onclick="event.stopPropagation(); removeMeal('${meal.id}')">
+                            <img src="/graphics/icons/trash.svg" alt="Remove" class="icon-button">
+                        </button>
                     </div>
                     <p>Weight: ${meal.weight || 0}g</p>
                     <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'}</p>
@@ -454,27 +658,33 @@ function updateAdventureDisplay() {
                 mealsList.appendChild(card);
             }
         });
+    } else {
+        mealsList.innerHTML = '<p>No meals added yet.</p>';
     }
 
-    // Update Selected Meal Details
+    // --- Update Selected Meal Section --- 
     if (selectedMeal && selectedMeal.child && selectedMeal.child.id) {
         // Find the *latest* version of the selected meal from the refreshed adventure data
         const currentMealData = currentAdventure.allChildren.find(m => m.child && m.child.id === selectedMeal.child.id);
 
         if (!currentMealData) { // Meal might have been deleted in the meantime
-            if (selectedMealDetailsDiv) selectedMealDetailsDiv.style.display = 'none';
-            if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'none';
+            if (selectedMealSection) selectedMealSection.style.display = 'none'; 
+            if (selectedIngredientSection) selectedIngredientSection.style.display = 'none';
+            if (addIngredientButton) addIngredientButton.style.display = 'none';
             selectedMeal = null;
             selectedIngredient = null;
-            // Optionally re-render display or handle error
             console.warn('Selected meal not found in current adventure data.');
             return; // Stop further processing for this meal
         }
 
-        const meal = currentMealData.child; // Use the up-to-date child object
-        const mealRatio = currentMealData.ratio; // Use the up-to-date ratio
+        selectedMeal = currentMealData; // Update state with fresh data
+        const meal = selectedMeal.child; // Use the up-to-date child object
+        const mealRatio = selectedMeal.ratio; // Use the up-to-date ratio
 
-        if (selectedMealDetailsDiv) selectedMealDetailsDiv.style.display = 'block'; 
+        if (selectedMealSection) selectedMealSection.style.display = 'block'; // Show the section
+        if (selectedMealDetailsDiv) selectedMealDetailsDiv.style.display = 'block'; // Show the details box
+        if (selectedMealTitle) selectedMealTitle.textContent = `Meal: ${meal.name || 'Unnamed'}`; 
+        if (addIngredientButton) addIngredientButton.style.display = 'inline-block'; // Show Add Ingredient button
 
         document.getElementById('selectedMealName').textContent = meal.name || 'Unknown';
         document.getElementById('selectedMealWeight').textContent = `${meal.weight || 0}g`;
@@ -484,61 +694,92 @@ function updateAdventureDisplay() {
         // Render Meal Nutrients
         renderNutrients(meal.nutrientsMap, 'selectedMealNutrients');
 
-        const ingredientsList = document.getElementById('selectedMealIngredients');
-        ingredientsList.innerHTML = '';
-        if (meal.allChildren && Array.isArray(meal.allChildren)) {
+        // Update Ingredients List (Now uses cards)
+        const ingredientsListDiv = document.getElementById('selectedMealIngredients');
+        ingredientsListDiv.innerHTML = ''; // Clear previous list/cards
+        if (meal.allChildren && Array.isArray(meal.allChildren) && meal.allChildren.length > 0) {
             meal.allChildren.forEach(ingredientData => {
                 if (ingredientData && ingredientData.child) {
                     const ingredient = ingredientData.child;
-                    const item = document.createElement('div');
-                    item.className = 'ingredient-item' + (selectedIngredient && selectedIngredient.child.id === ingredient.id ? ' selected' : '');
-                    item.dataset.ingredientId = ingredient.id;
-                    item.innerHTML = `
-                        <div class="ingredient-content">
-                            <span class="ingredient-name">${ingredient.name || 'Unknown'}</span>
-                            <span class="ingredient-details">
-                                <span class="ingredient-weight">Weight: ${ingredientData.recipeWeight || 0}g</span>
-                                <span class="ingredient-ratio">Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</span>
-                            </span>
+                    const card = document.createElement('div');
+                    card.className = 'ingredient-card' + (selectedIngredient && selectedIngredient.child.id === ingredient.id ? ' selected' : '');
+                    card.dataset.ingredientId = ingredient.id;
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h4>${ingredient.name || 'Unknown'}</h4>
+                            <div class="button-group">
+                                <button class="modify-button" onclick="event.stopPropagation(); openModifyIngredientModal(JSON.parse(this.dataset.ingredientData))";>Modify</button>
+                                <button class="remove-button" onclick="event.stopPropagation(); removeIngredient('${ingredient.id}')">
+                                    <img src="/graphics/icons/trash.svg" alt="Remove" class="icon-button">
+                                </button>
+                            </div>
                         </div>
-                        <button class="remove-button" onclick="event.stopPropagation(); removeIngredient('${ingredient.id}')">Remove</button>
+                        <p>Weight: ${ingredientData.recipeWeight || 0}g</p>
+                        <p>Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</p>
                     `;
-                    item.onclick = (e) => {
-                        e.stopPropagation();
-                        selectIngredient(ingredientData); // Pass the full ingredient data
+                    // Store the full ingredient data on the modify button for the modal
+                    card.querySelector('.modify-button').dataset.ingredientData = JSON.stringify(ingredientData);
+                    
+                    // Still allow clicking the card to select for detail view (optional)
+                    card.onclick = (e) => {
+                         // Prevent card click if a button inside was clicked
+                        if (e.target.tagName !== 'BUTTON') {
+                            selectIngredient(ingredientData); 
+                        }
                     };
-                    ingredientsList.appendChild(item);
+                    ingredientsListDiv.appendChild(card);
                 }
             });
         } else {
-             ingredientsList.innerHTML = '<p>No ingredients added yet.</p>';
+             ingredientsListDiv.innerHTML = '<p>No ingredients added yet.</p>';
         }
     } else {
         // Hide meal details if no meal is selected
+        if (selectedMealSection) selectedMealSection.style.display = 'none'; // Hide whole section
         if (selectedMealDetailsDiv) selectedMealDetailsDiv.style.display = 'none';
+        if (selectedMealTitle) selectedMealTitle.textContent = 'Selected Meal Details'; // Reset title
+        if (addIngredientButton) addIngredientButton.style.display = 'none'; // Hide Add Ingredient button
+        
         // Also hide ingredient details when meal is deselected
+        if (selectedIngredientSection) selectedIngredientSection.style.display = 'none';
         if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'none';
-        selectedIngredient = null; // Reset selected ingredient
+        if (selectedIngredientTitle) selectedIngredientTitle.textContent = 'Selected Ingredient Details'; // Reset title
+        selectedIngredient = null; // Reset selected ingredient state
     }
 
-    // Update Selected Ingredient Details
+    // --- Update Selected Ingredient Section --- 
     if (selectedIngredient && selectedIngredient.child && selectedIngredient.child.id) {
-        const ingredient = selectedIngredient.child;
-        const ingredientRatio = selectedIngredient.ratio;
-        const ingredientWeight = selectedIngredient.recipeWeight;
-
-        if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'flex'; // Use flex
-
-        document.getElementById('selectedIngredientName').textContent = ingredient.name || 'Unknown';
-        document.getElementById('selectedIngredientWeight').textContent = `${ingredientWeight || 0}g`;
-        document.getElementById('selectedIngredientRatio').textContent = `${(ingredientRatio * 100).toFixed(1)}%`;
-
-        // Render Ingredient Nutrients
-        renderNutrients(ingredient.nutrientsMap, 'selectedIngredientNutrients');
+        // Find the latest version from the *selected meal's* children
+        const currentIngredientData = selectedMeal?.child?.allChildren?.find(i => i.child && i.child.id === selectedIngredient.child.id);
+        
+        if (!currentIngredientData) {
+            if (selectedIngredientSection) selectedIngredientSection.style.display = 'none';
+            selectedIngredient = null;
+             console.warn('Selected ingredient not found in current meal data.');
+             // Don't return here, just ensure the section is hidden
+        } else { 
+             selectedIngredient = currentIngredientData; // Update state
+             const ingredient = selectedIngredient.child;
+             const ingredientRatio = selectedIngredient.ratio;
+             const ingredientWeight = selectedIngredient.recipeWeight;
+     
+             if (selectedIngredientSection) selectedIngredientSection.style.display = 'block'; // Show section
+             if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'flex'; // Use flex for two-column
+             if (selectedIngredientTitle) selectedIngredientTitle.textContent = `Ingredient: ${ingredient.name || 'Unnamed'}`;
+     
+             document.getElementById('selectedIngredientName').textContent = ingredient.name || 'Unknown';
+             document.getElementById('selectedIngredientWeight').textContent = `${ingredientWeight || 0}g`;
+             document.getElementById('selectedIngredientRatio').textContent = `${(ingredientRatio * 100).toFixed(1)}%`;
+     
+             // Render Ingredient Nutrients
+             renderNutrients(ingredient.nutrientsMap, 'selectedIngredientNutrients');
+        }
     } else {
         // Hide ingredient details if no ingredient is selected
+        if (selectedIngredientSection) selectedIngredientSection.style.display = 'none';
         if (selectedIngredientDetailsDiv) selectedIngredientDetailsDiv.style.display = 'none';
-    }
+         if (selectedIngredientTitle) selectedIngredientTitle.textContent = 'Selected Ingredient Details'; // Reset title
+   }
 }
 
 function selectMeal(mealData) {
@@ -547,8 +788,14 @@ function selectMeal(mealData) {
         selectedMeal = null;
         selectedIngredient = null; // Reset ingredient when meal changes
     } else {
-        selectedMeal = mealData; // Store the whole meal data including ratio
-        selectedIngredient = null; // Reset ingredient when meal changes
+        // If the same meal is clicked again, deselect it
+        if (selectedMeal && selectedMeal.child && selectedMeal.child.id === mealData.child.id) {
+            selectedMeal = null;
+            selectedIngredient = null;
+        } else {
+             selectedMeal = mealData; // Store the whole meal data including ratio
+             selectedIngredient = null; // Reset ingredient when meal changes
+        }
     }
     
     // Update the visual selection state for meal cards
@@ -563,85 +810,52 @@ function selectMeal(mealData) {
     updateAdventureDisplay(); // Refresh the entire display
 }
 
-// Function to handle ingredient selection
+// Function to handle ingredient selection (by clicking card)
 function selectIngredient(ingredientData) {
     if (!ingredientData || !ingredientData.child || !ingredientData.child.id) {
         console.warn('Attempted to select invalid ingredient data:', ingredientData);
         selectedIngredient = null;
     } else {
-        selectedIngredient = ingredientData;
-        // Update visual selection in the list
-        document.querySelectorAll('.ingredient-item').forEach(item => {
-            if (item.dataset.ingredientId === selectedIngredient.child.id.toString()) {
-                item.classList.add('selected');
-            } else {
-                item.classList.remove('selected');
-            }
-        });
+         // If the same ingredient is clicked again, deselect it
+        if (selectedIngredient && selectedIngredient.child && selectedIngredient.child.id === ingredientData.child.id) {
+            selectedIngredient = null;
+        } else {
+            selectedIngredient = ingredientData;
+        }
     }
+    
+    // Update visual selection in the list
+    document.querySelectorAll('.ingredient-card').forEach(item => {
+         if (selectedIngredient && item.dataset.ingredientId === selectedIngredient.child.id.toString()) {
+             item.classList.add('selected');
+         } else {
+             item.classList.remove('selected');
+         }
+     });
+
     updateAdventureDisplay(); // Refresh display to show ingredient details
 }
 
-// Fetch and display adventures
+// Fetch and display adventures (Now handled by initializeDemo)
+/*
 async function fetchAdventures() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/adventures`);
-        const adventures = await response.json();
-        
-        adventuresList.innerHTML = adventures.map(adventure => `
-            <div class="item-card">
-                <div class="item-name">${adventure.name}</div>
-                <div class="item-details">
-                    Created: ${new Date(adventure.creationTime).toLocaleString()}
-                </div>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Error fetching adventures:', error);
-        adventuresList.innerHTML = '<div class="error">Failed to load adventures</div>';
-    }
+    // ... (kept for reference, but not called)
 }
+*/
 
-// Fetch and display crew members
+// Fetch and display crew members (Now handled within adventure display)
+/*
 async function fetchCrewMembers() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/crew-members`);
-        const crewMembers = await response.json();
-        
-        crewMembersList.innerHTML = crewMembers.map(member => `
-            <div class="item-card">
-                <div class="item-name">${member.name}</div>
-                <div class="item-details">
-                    ID: ${member.id}
-                </div>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Error fetching crew members:', error);
-        crewMembersList.innerHTML = '<div class="error">Failed to load crew members</div>';
-    }
+    // ... (kept for reference, but not called)
 }
+*/
 
-// Fetch and display base classes
+// Fetch and display base classes (Not currently used in this layout)
+/*
 async function fetchBaseClasses() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/base-classes`);
-        const baseClasses = await response.json();
-        
-        baseClassesList.innerHTML = baseClasses.map(baseClass => `
-            <div class="item-card">
-                <div class="item-name">${baseClass.name}</div>
-                <div class="item-details">
-                    Type: ${baseClass.type}<br>
-                    Created: ${new Date(baseClass.creationTime).toLocaleString()}
-                </div>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Error fetching base classes:', error);
-        baseClassesList.innerHTML = '<div class="error">Failed to load base classes</div>';
-    }
+    // ... (kept for reference, but not called)
 }
+*/
 
 // Initialize the demo
 async function initializeDemo() {
@@ -651,16 +865,71 @@ async function initializeDemo() {
         if (response.ok) {
             adventures = await response.json();
             updateAdventureDropdown();
+            // Optionally select the first adventure by default?
+            // if (adventures.length > 0) {
+            //    await selectAdventure(adventures[0].id);
+            // }
+        } else {
+             throw new Error('Failed to fetch initial adventures');
         }
     } catch (error) {
-        console.error('Error fetching adventures:', error);
+        console.error('Error initializing demo:', error);
+        alert('Failed to load initial adventure data. Please check the API connection.');
     }
 
-    // Ensure the adventure info is hidden initially
-    const adventureInfo = document.getElementById('adventureInfo');
-    if (adventureInfo) {
-        adventureInfo.style.display = 'none';
+    // Add Enter key listeners for modal inputs
+    if (modalMealNameInput) {
+        modalMealNameInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission (if any)
+                addMeal();
+            }
+        });
     }
+    if (modalIngredientNameInput) {
+        modalIngredientNameInput.addEventListener('keypress', function(event) {
+             if (event.key === 'Enter') {
+                event.preventDefault();
+                addIngredient();
+            }
+        });
+    }
+    if (modalDaysInput) { // Add listener for days input
+         modalDaysInput.addEventListener('keypress', function(event) {
+             if (event.key === 'Enter') {
+                event.preventDefault();
+                setDays();
+            }
+        });
+    }
+     if (modalIngredientWeightInput) { // Add listener for modify ingredient weight
+         modalIngredientWeightInput.addEventListener('keypress', function(event) {
+             if (event.key === 'Enter') {
+                event.preventDefault();
+                updateIngredient();
+            }
+        });
+    }
+
+    // Add Escape key listener for modals
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            if (addCrewModal && addCrewModal.style.display === 'block') {
+                closeAddCrewModal();
+            } else if (addMealModal && addMealModal.style.display === 'block') {
+                closeAddMealModal();
+            } else if (addIngredientModal && addIngredientModal.style.display === 'block') {
+                closeAddIngredientModal();
+            } else if (setDaysModal && setDaysModal.style.display === 'block') {
+                closeSetDaysModal();
+            } else if (modifyIngredientModal && modifyIngredientModal.style.display === 'block') {
+                 closeModifyIngredientModal();
+            }
+        }
+    });
+
+    // Ensure the adventure info is hidden initially by updateAdventureDisplay
+    updateAdventureDisplay(); 
 }
 
 // Start the demo when the page loads
@@ -672,6 +941,14 @@ async function removeCrewMember(crewId) {
         alert('Please select an adventure first');
         return;
     }
+    
+    // Find crew member name for confirmation (optional but nice)
+    const member = currentAdventure.allCrewMembers.find(m => m.id === crewId);
+    const confirmMsg = member 
+        ? `Are you sure you want to remove crew member "${member.name}"?` 
+        : 'Are you sure you want to remove this crew member?';
+
+    if (!confirm(confirmMsg)) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}/crew/${crewId}`, {
@@ -695,6 +972,14 @@ async function removeMeal(mealId) {
         return;
     }
 
+    // Find meal name for confirmation
+    const mealData = currentAdventure.allChildren.find(m => m.child && m.child.id === mealId);
+    const confirmMsg = mealData && mealData.child
+        ? `Are you sure you want to remove meal "${mealData.child.name}"?`
+        : 'Are you sure you want to remove this meal?';
+    
+    if (!confirm(confirmMsg)) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/adventures/${currentAdventure.id}/meals/${mealId}`, {
             method: 'DELETE'
@@ -704,11 +989,12 @@ async function removeMeal(mealId) {
             throw new Error('Failed to remove meal');
         }
 
-        if (selectedMeal && selectedMeal.id === mealId) {
+        // If the removed meal was the selected one, reset selection
+        if (selectedMeal && selectedMeal.child && selectedMeal.child.id === mealId) {
             selectedMeal = null;
             selectedIngredient = null; // Also reset ingredient if its meal is removed
         }
-        await refreshCurrentAdventure();
+        await refreshCurrentAdventure(); // This will trigger updateAdventureDisplay
     } catch (error) {
         alert('Error removing meal: ' + error.message);
     }
@@ -723,6 +1009,14 @@ async function removeIngredient(ingredientId) {
 
     const mealId = selectedMeal.child.id; // Get meal ID from state
 
+     // Find ingredient name for confirmation
+    const ingredientData = selectedMeal?.child?.allChildren?.find(i => i.child && i.child.id === ingredientId);
+    const confirmMsg = ingredientData && ingredientData.child
+        ? `Are you sure you want to remove ingredient "${ingredientData.child.name}" from meal "${selectedMeal.child.name}"?`
+        : `Are you sure you want to remove this ingredient from meal "${selectedMeal.child.name}"?`;
+
+    if (!confirm(confirmMsg)) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients/${ingredientId}`, {
             method: 'DELETE'
@@ -732,11 +1026,12 @@ async function removeIngredient(ingredientId) {
             throw new Error('Failed to remove ingredient');
         }
 
+        // If the removed ingredient was selected, reset selection
         if (selectedIngredient && selectedIngredient.child.id === ingredientId) {
             selectedIngredient = null;
         }
 
-        await refreshCurrentAdventure();
+        await refreshCurrentAdventure(); // Refresh to update meal/adventure state
     } catch (error) {
         alert('Error removing ingredient: ' + error.message);
     }

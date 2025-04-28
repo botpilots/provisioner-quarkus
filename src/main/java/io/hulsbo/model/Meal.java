@@ -27,7 +27,7 @@ public SafeID putChild(Ingredient newIngredient) {
      */
     public void modifyWeightOfIngredient(SafeID id, double absWeight) {
         if (childMap.get(id) == null) {
-            throw new IllegalArgumentException("No Ingredient with such name exist.");
+            throw new IllegalArgumentException("No Ingredient with such an ID exist.");
         }
         if (absWeight == 0) {
             throw new IllegalArgumentException("The absWeight cannot be 0.");

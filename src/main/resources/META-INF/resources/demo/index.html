@@ -13,10 +13,12 @@
         <!-- Top Section for Adventure Creation/Selection -->
         <div class="top-section">
             <!-- Create Adventure -->
-            <div class="form-group">
+            <div class="form-group inline-form-group">
                 <h3>Create Adventure</h3>
-                <input type="text" id="adventureName" placeholder="Adventure Name">
-                <button onclick="createAdventure()">Create</button>
+                <div class="input-button-row">
+                    <input type="text" id="adventureName" placeholder="Adventure Name">
+                    <button onclick="createAdventure()">Create</button>
+                </div>
             </div>
 
             <!-- Adventure Selection -->
@@ -26,15 +28,20 @@
                     <select id="adventureSelect" onchange="selectAdventure(this.value)">
                         <option value="">Select an adventure...</option>
                     </select>
-                    <button onclick="removeSelectedAdventure()" class="remove-button">Remove Adventure</button>
+                    <button onclick="removeSelectedAdventure()" class="remove-button">
+                        <img src="/graphics/icons/trash.svg" alt="Remove Adventure" class="icon-button">
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Adventure Information Section -->
         <div class="adventure-info-section section">
-            <h2>Adventure Information</h2>
-            <div id="adventureInfo">
+             <div class="section-header">
+                 <h2 id="adventureTitle">Adventure Information</h2>
+                 <button class="add-button-inline" onclick="openSetDaysModal()" id="setDaysButton" style="display: none;">+ Set Days</button>
+             </div>
+            <div id="adventureInfo" style="display: none;">
                 <div class="info-group two-column">
                     <div class="info-column">
                         <h3>Basic Info</h3>
@@ -71,18 +78,27 @@
                 </div>
 
                 <div class="info-group">
-                    <h3>Crew Members</h3>
+                    <div class="info-group-header">
+                        <h3>Crew Members</h3>
+                        <button class="add-button-inline" onclick="openAddCrewModal()">+ Add Crew</button>
+                    </div>
                     <div id="crewMembersList" class="list-container"></div>
                 </div>
 
                 <div class="info-group">
-                    <h3>Meals</h3>
+                    <div class="info-group-header">
+                        <h3>Meals</h3>
+                        <button class="add-button-inline" onclick="openAddMealModal()">+ Add Meal</button>
+                    </div>
                     <div id="mealsList" class="list-container"></div>
                 </div>
 
                 <div class="info-group">
-                    <h3>Selected Meal Details</h3>
-                    <div id="selectedMealDetails" class="meal-details info-group">
+                     <div class="info-group-header">
+                        <h3 id="selectedMealTitle">Selected Meal Details</h3>
+                         <button class="add-button-inline" onclick="openAddIngredientModal()" id="addIngredientButton" style="display: none;">+ Add Ingredient</button>
+                    </div>
+                    <div id="selectedMealDetails" class="meal-details info-group" style="display: none;">
                         <div class="two-column-layout">
                             <div class="info-column">
                                 <h3>Basic Info</h3>
@@ -110,13 +126,13 @@
                         </div>
                         <div class="ingredients-section">
                             <h3>Ingredients</h3>
-                            <div id="selectedMealIngredients" class="ingredients-list"></div>
+                            <div id="selectedMealIngredients" class="list-container"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="info-group">
-                    <h3>Selected Ingredient Details</h3>
+                    <h3 id="selectedIngredientTitle">Selected Ingredient Details</h3>
                     <div id="selectedIngredientDetails" class="ingredient-details-section info-group two-column" style="display: none;">
                         <div class="info-column">
                             <h3>Basic Info</h3>
@@ -143,91 +159,133 @@
         </div>
         
         <div class="main-content">
-            <!-- Left Column - Inputs -->
+            <!-- Left Column - Remaining Inputs -->
             <div class="left-column">
-                <!-- Add Crew Member -->
-                <div class="form-group">
-                    <h3>Add Crew Member</h3>
-                    <input type="text" id="crewName" placeholder="Name">
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label>Age</label>
-                            <input type="number" id="crewAge" min="18" max="100" value="30">
-                        </div>
-                        <div class="input-group">
-                            <label>Height (cm)</label>
-                            <input type="number" id="crewHeight" min="140" max="220" value="175">
-                        </div>
-                        <div class="input-group">
-                            <label>Weight (kg)</label>
-                            <input type="number" id="crewWeight" min="40" max="150" value="70">
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label>Gender</label>
-                            <select id="crewGender">
-                                <option value="MALE">Male</option>
-                                <option value="FEMALE">Female</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Activity Level</label>
-                            <select id="crewActivity">
-                                <option value="SEDENTARY">Sedentary</option>
-                                <option value="MILD">Mild</option>
-                                <option value="MODERATE">Moderate</option>
-                                <option value="HEAVY">Heavy</option>
-                                <option value="VERY_HEAVY">Very Heavy</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Strategy</label>
-                            <select id="crewStrategy">
-                                <option value="harris_benedict_original">Harris-Benedict Original</option>
-                                <option value="harris_benedict_revised">Harris-Benedict Revised</option>
-                                <option value="mifflin_st_jeor">Mifflin-St Jeor</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="addCrewMember()">Add Crew Member</button>
-                </div>
-
-                <!-- Set Days -->
-                <div class="form-group">
-                    <h3>Set Number of Days</h3>
-                    <input type="number" id="days" min="1" max="365" value="5">
-                    <button onclick="setDays()">Set Days</button>
-                </div>
-
-                <!-- Add Meal -->
-                <div class="form-group">
-                    <h3>Add Meal</h3>
-                    <input type="text" id="mealName" placeholder="Meal Name">
-                    <button onclick="addMeal()">Add Meal</button>
-                </div>
-
-                <!-- Add Ingredient -->
-                <div class="form-group">
-                    <h3>Add Ingredient</h3>
-                    <input type="text" id="ingredientName" placeholder="Ingredient Name">
-                    <button onclick="addIngredient()">Add Ingredient</button>
-                </div>
-
-                <!-- Modify Ingredient Weight -->
-                <div class="form-group">
-                    <h3>Modify Ingredient Weight</h3>
-                    <input type="number" id="ingredientWeight" min="1" max="1000" value="100" placeholder="Weight (g)">
-                    <button onclick="modifyIngredientWeight()">Update Weight</button>
-                </div>
+                <!-- Modify Ingredient Weight form group removed -->
             </div>
 
-            <!-- Right Column - Display (Now potentially empty or for other content) -->
+            <!-- Right Column - Display (Hidden) -->
             <div class="right-column">
-                <!-- This column is now empty, we might remove it or repurpose it later -->
+                <!-- This column is now empty -->
             </div>
         </div>
     </div>
+
+    <!-- Add Crew Member Modal -->
+    <div id="addCrewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddCrewModal()">&times;</span>
+            <h3>Add Crew Member</h3>
+			<div class="input-group">
+				<label>Name</label>
+  				<input type="text" id="modalCrewName" placeholder="Name">
+			</div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Age</label>
+                    <input type="number" id="modalCrewAge" min="18" max="100" value="30">
+                </div>
+                <div class="input-group">
+                    <label>Height (cm)</label>
+                    <input type="number" id="modalCrewHeight" min="140" max="220" value="175">
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="modalCrewWeight" min="40" max="150" value="70">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Gender</label>
+                    <select id="modalCrewGender">
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Activity Level</label>
+                    <select id="modalCrewActivity">
+                        <option value="SEDENTARY">Sedentary</option>
+                        <option value="MILD">Mild</option>
+                        <option value="MODERATE">Moderate</option>
+                        <option value="HEAVY">Heavy</option>
+                        <option value="VERY_HEAVY">Very Heavy</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Strategy</label>
+                    <select id="modalCrewStrategy">
+                        <option value="harris_benedict_original">Harris-Benedict Original</option>
+                        <option value="harris_benedict_revised">Harris-Benedict Revised</option>
+                        <option value="mifflin_st_jeor">Mifflin-St Jeor</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="addCrewMember()" class="modal-add-button">Add Crew Member</button>
+        </div>
+    </div>
+
+    <!-- Add Meal Modal -->
+    <div id="addMealModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddMealModal()">&times;</span>
+            <h3>Add New Meal</h3>
+            <div class="modal-input-row">
+                 <label for="modalMealName" class="sr-only">Meal Name:</label> 
+                 <input type="text" id="modalMealName" placeholder="Enter name and press Enter...">
+                 <button onclick="addMeal()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Ingredient Modal -->
+    <div id="addIngredientModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddIngredientModal()">&times;</span>
+            <h3>Add New Ingredient</h3>
+             <div class="modal-input-row">
+                 <label for="modalIngredientName" class="sr-only">Ingredient Name:</label>
+                 <input type="text" id="modalIngredientName" placeholder="Enter name and press Enter...">
+                 <button onclick="addIngredient()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Days Modal -->
+    <div id="setDaysModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeSetDaysModal()">&times;</span>
+            <h3>Set Adventure Duration</h3>
+             <div class="modal-input-row">
+                 <label for="modalDays" class="sr-only">Number of Days:</label>
+                 <input type="number" id="modalDays" min="1" max="365" value="5" placeholder="Days...">
+                 <button onclick="setDays()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modify Ingredient Modal -->
+    <div id="modifyIngredientModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModifyIngredientModal()">&times;</span>
+            <h3>Modify Ingredient: <span id="modalIngredientModifyName">-</span></h3>
+            <input type="hidden" id="modalIngredientModifyId"> 
+            
+            <div class="input-group">
+                <label for="modalIngredientWeight">Weight (g)</label>
+                <input type="number" id="modalIngredientWeight" min="1" value="100">
+            </div>
+
+            <div class="input-group">
+                <h4>Current Nutrients</h4>
+                <div id="modalIngredientNutrients" class="nutrients-list modal-nutrients"></div>
+                <!-- Nutrient modification inputs will be added here later -->
+            </div>
+            
+            <button onclick="updateIngredient()" class="modal-add-button">Update Ingredient</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html> 
