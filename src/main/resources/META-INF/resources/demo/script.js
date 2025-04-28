@@ -8,6 +8,7 @@ let selectedMeal = null;
 let selectedIngredient = null; // Add state for selected ingredient
 let ingredientToModify = null; // Temp store for ingredient being modified
 let lastAdventureData = null;  // Store last fetched adventure data for comparison
+let previousIngredientModalState = {}; // Store previous values for comparison
 
 // DOM elements
 const adventuresList = document.getElementById('adventures-list');
@@ -24,12 +25,19 @@ const modalDaysInput = document.getElementById('modalDays');
 const modalIngredientModifyName = document.getElementById('modalIngredientModifyName'); // Modify modal name display
 const modalIngredientModifyId = document.getElementById('modalIngredientModifyId'); // Modify modal hidden ID
 const modalIngredientWeightInput = document.getElementById('modalIngredientWeight'); // Modify modal weight input
-const modalIngredientNutrientsDiv = document.getElementById('modalIngredientNutrients'); // Modify modal nutrient display
+// Nutrient input elements
+const modalIngredientProteinInput = document.getElementById('modalIngredientProtein');
+const modalIngredientFatInput = document.getElementById('modalIngredientFat');
+const modalIngredientCarbsInput = document.getElementById('modalIngredientCarbs');
+const modalIngredientWaterInput = document.getElementById('modalIngredientWater');
+const modalIngredientFiberInput = document.getElementById('modalIngredientFiber');
+const modalIngredientSaltInput = document.getElementById('modalIngredientSalt');
 const adventureTitle = document.getElementById('adventureTitle');
 const selectedMealTitle = document.getElementById('selectedMealTitle');
 const selectedIngredientTitle = document.getElementById('selectedIngredientTitle');
 const addIngredientButton = document.getElementById('addIngredientButton');
 const setDaysButton = document.getElementById('setDaysButton'); 
+const modalIngredientFeedback = document.getElementById('modalIngredientFeedback'); // Added feedback element
 
 // Helper function to make API calls
 async function makeApiCall(url, method = 'GET', body = null) {
@@ -132,7 +140,7 @@ async function refreshCurrentAdventure() {
 
             updateAdventureDisplay();
 			// Print for debug purposes.
-			// console.log(currentAdventure);
+			console.log(currentAdventure);
         }
     } catch (error) {
         console.error('Error refreshing adventure:', error);
@@ -335,23 +343,71 @@ function openModifyIngredientModal(ingredientData) {
         console.error('Invalid ingredient data for modification modal');
         return;
     }
-    ingredientToModify = ingredientData; // Store data temporarily
+    ingredientToModify = ingredientData; // Store current data
     const ingredient = ingredientData.child;
+    const nutrients = ingredient.nutrientsMap || {};
+
+    // Clear previous feedback and styling
+    clearModalFeedbackAndStyles();
+
+    // Populate inputs and store these as the 'previous' state for comparison on update
+    previousIngredientModalState = {}; // Reset previous state
 
     if (modalIngredientModifyName) modalIngredientModifyName.textContent = ingredient.name || 'Unknown';
     if (modalIngredientModifyId) modalIngredientModifyId.value = ingredient.id;
-    if (modalIngredientWeightInput) modalIngredientWeightInput.value = ingredientData.recipeWeight || 0;
     
-    // Display current nutrients (read-only)
-    renderNutrients(ingredient.nutrientsMap, 'modalIngredientNutrients');
+    const currentWeight = ingredientData.recipeWeight || 0;
+    if (modalIngredientWeightInput) modalIngredientWeightInput.value = currentWeight;
+    previousIngredientModalState.weight = currentWeight;
+
+    const nutrientValues = {
+        protein: ((nutrients.protein || 0) * 100).toFixed(1),
+        fat:     ((nutrients.fat || 0) * 100).toFixed(1),
+        carbs:   ((nutrients.carbs || 0) * 100).toFixed(1),
+        water:   ((nutrients.water || 0) * 100).toFixed(1),
+        fiber:   ((nutrients.fiber || 0) * 100).toFixed(1),
+        salt:    ((nutrients.salt || 0) * 100).toFixed(1)
+    };
+
+    if (modalIngredientProteinInput) modalIngredientProteinInput.value = nutrientValues.protein;
+    if (modalIngredientFatInput)     modalIngredientFatInput.value = nutrientValues.fat;
+    if (modalIngredientCarbsInput)   modalIngredientCarbsInput.value = nutrientValues.carbs;
+    if (modalIngredientWaterInput)   modalIngredientWaterInput.value = nutrientValues.water;
+    if (modalIngredientFiberInput)   modalIngredientFiberInput.value = nutrientValues.fiber;
+    if (modalIngredientSaltInput)    modalIngredientSaltInput.value = nutrientValues.salt;
+    previousIngredientModalState.nutrients = nutrientValues; // Store as percentages
 
     if (modifyIngredientModal) modifyIngredientModal.style.display = 'block';
-    if (modalIngredientWeightInput) modalIngredientWeightInput.focus(); // Focus weight input
+    if (modalIngredientWeightInput) modalIngredientWeightInput.focus();
 }
 
 function closeModifyIngredientModal() {
     if (modifyIngredientModal) modifyIngredientModal.style.display = 'none';
-    ingredientToModify = null; // Clear temporary data
+    ingredientToModify = null; 
+    previousIngredientModalState = {}; // Clear state on close
+    clearModalFeedbackAndStyles(); // Clear feedback when closing
+}
+
+function clearModalFeedbackAndStyles() {
+     if (modalIngredientFeedback) {
+        modalIngredientFeedback.textContent = '';
+        modalIngredientFeedback.className = 'modal-feedback'; // Reset classes
+    }
+    // Remove input styling classes
+    const inputsToClear = [
+        modalIngredientWeightInput,
+        modalIngredientProteinInput,
+        modalIngredientFatInput,
+        modalIngredientCarbsInput,
+        modalIngredientWaterInput,
+        modalIngredientFiberInput,
+        modalIngredientSaltInput
+    ];
+    inputsToClear.forEach(input => {
+        if(input) {
+            input.classList.remove('input-increased', 'input-decreased');
+        }
+    });
 }
 
 // Close modal if user clicks outside of it
@@ -517,45 +573,179 @@ async function addIngredient() {
 // NEW function to update ingredient via modal
 async function updateIngredient() {
     const ingredientId = modalIngredientModifyId.value;
-    const newWeight = modalIngredientWeightInput.value;
+    const newWeightValue = modalIngredientWeightInput.value;
+
+    // Read nutrient values (as percentages)
+    const proteinPercent = parseFloat(modalIngredientProteinInput.value) || 0;
+    const fatPercent = parseFloat(modalIngredientFatInput.value) || 0;
+    const carbsPercent = parseFloat(modalIngredientCarbsInput.value) || 0;
+    const waterPercent = parseFloat(modalIngredientWaterInput.value) || 0;
+    const fiberPercent = parseFloat(modalIngredientFiberInput.value) || 0;
+    const saltPercent = parseFloat(modalIngredientSaltInput.value) || 0;
+    
+    // Clear previous feedback before attempting update
+    clearModalFeedbackAndStyles();
 
     if (!ingredientId) {
-        alert('Error: Cannot identify ingredient to modify.');
+        setModalFeedback('Error: Cannot identify ingredient to modify.', true);
         return;
     }
     if (!selectedMeal || !selectedMeal.child) {
-        alert('Error: No meal selected.');
+        setModalFeedback('Error: No meal selected.', true);
         return;
     }
-     if (!newWeight || newWeight < 1) {
-        alert('Please enter a valid weight (minimum 1).');
+    
+    if (newWeightValue === '' || newWeightValue === null || parseFloat(newWeightValue) < 0) {
+        setModalFeedback('Please enter a valid weight (minimum 0).', true);
         modalIngredientWeightInput.focus();
         return;
     }
+    const newWeight = parseFloat(newWeightValue);
+    
+    const nutrientsPercent = [proteinPercent, fatPercent, carbsPercent, waterPercent, fiberPercent, saltPercent];
+    if (nutrientsPercent.some(n => n < 0 || n > 100)) {
+         setModalFeedback('Nutrient percentages must be between 0 and 100.', true);
+         return;
+    }
+    // Removed sum > 100% check - backend handles it now
+    // const nutrientSumPercent = nutrientsPercent.reduce((sum, n) => sum + n, 0);
+    // if (nutrientSumPercent > 100.1) { ... }
+
+    // Convert percentages to ratios for API call
+    const proteinRatio = proteinPercent / 100;
+    const fatRatio = fatPercent / 100;
+    const carbsRatio = carbsPercent / 100;
+    const waterRatio = waterPercent / 100;
+    const fiberRatio = fiberPercent / 100;
+    const saltRatio = saltPercent / 100;
 
     const mealId = selectedMeal.child.id;
 
-    // --- IMPORTANT --- 
-    // Only send the WEIGHT update for now, as requested.
-    // Nutrient updates will be added later.
+    const params = new URLSearchParams();
+    params.append('weight', newWeight);
+    params.append('protein', proteinRatio);
+    params.append('fat', fatRatio);
+    params.append('carbs', carbsRatio);
+    params.append('water', waterRatio);
+    params.append('fiber', fiberRatio);
+    params.append('salt', saltRatio);
+
     try {
-        const response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients/${ingredientId}?weight=${newWeight}`, {
+        const response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients/${ingredientId}?${params.toString()}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-            // NO BODY needed for this endpoint currently
+            headers: { 'Content-Type': 'application/json' }
         });
 
+        const responseData = await response.json(); // Assume backend sends JSON on success or error
+
         if (!response.ok) {
-            throw new Error('Failed to modify ingredient weight');
+            let errorMsg = 'Failed to modify ingredient.';
+            // Use message from backend if available
+            errorMsg = responseData.message || responseData.error || (typeof responseData === 'string' ? responseData : errorMsg);
+            // Throw an error with ONLY the backend message
+            throw new Error(errorMsg);
         }
 
-        closeModifyIngredientModal(); // Close modal on success
-        await refreshCurrentAdventure();
+        // --- Success --- 
+        setModalFeedback('Ingredient updated successfully!', false);
+
+        // Update the modal fields with the *returned* normalized/stolen values
+        const updatedIngredient = responseData; // The updated ingredient object from backend
+        const updatedNutrients = updatedIngredient.nutrientsMap || {};
+        const updatedWeight = updatedIngredient.weight; // Backend endpoint returns the Ingredient, not ChildWrapper. Need weight if available.
+        // NOTE: The backend currently returns the Ingredient object which DOES NOT have recipeWeight.
+        // We'll update with the weight SENT for now, assuming it was accepted.
+        // A better approach might be for the backend to return the updated ChildWrapper or the specific weight.
+        const currentReturnedWeight = newWeight; 
+
+        if (modalIngredientWeightInput) modalIngredientWeightInput.value = currentReturnedWeight;
+
+        const returnedNutrientsPercent = {
+            protein: ((updatedNutrients.protein || 0) * 100).toFixed(1),
+            fat:     ((updatedNutrients.fat || 0) * 100).toFixed(1),
+            carbs:   ((updatedNutrients.carbs || 0) * 100).toFixed(1),
+            water:   ((updatedNutrients.water || 0) * 100).toFixed(1),
+            fiber:   ((updatedNutrients.fiber || 0) * 100).toFixed(1),
+            salt:    ((updatedNutrients.salt || 0) * 100).toFixed(1)
+        };
+        
+        if (modalIngredientProteinInput) modalIngredientProteinInput.value = returnedNutrientsPercent.protein;
+        if (modalIngredientFatInput)     modalIngredientFatInput.value = returnedNutrientsPercent.fat;
+        if (modalIngredientCarbsInput)   modalIngredientCarbsInput.value = returnedNutrientsPercent.carbs;
+        if (modalIngredientWaterInput)   modalIngredientWaterInput.value = returnedNutrientsPercent.water;
+        if (modalIngredientFiberInput)   modalIngredientFiberInput.value = returnedNutrientsPercent.fiber;
+        if (modalIngredientSaltInput)    modalIngredientSaltInput.value = returnedNutrientsPercent.salt;
+
+        // Highlight changes based on comparison with 'previousIngredientModalState'
+        highlightInputChanges(currentReturnedWeight, returnedNutrientsPercent);
+
+        // Update the 'previous' state for the *next* comparison
+        previousIngredientModalState.weight = currentReturnedWeight;
+        previousIngredientModalState.nutrients = returnedNutrientsPercent;
+        
+        // Update ingredientToModify state if needed for other logic (though maybe not strictly necessary here)
+        // ingredientToModify = ??? // Backend needs to return ChildWrapper for this to be accurate
+
+        // Refresh the main adventure view in the background AFTER modal update
+        await refreshCurrentAdventure(); 
+        
+        // DO NOT close the modal automatically
+        // closeModifyIngredientModal(); 
+
     } catch (error) {
-        alert('Error modifying ingredient weight: ' + error.message);
-        // Optionally keep modal open
+        // --- Error --- 
+        setModalFeedback('Error: ' + error.message, true);
+		console.log(error.message)
+    }
+}
+
+// Helper to set modal feedback message and style
+function setModalFeedback(message, isError) {
+    if (modalIngredientFeedback) {
+        modalIngredientFeedback.textContent = message;
+        modalIngredientFeedback.className = 'modal-feedback'; // Reset
+        if (isError) {
+            modalIngredientFeedback.classList.add('error');
+        } else {
+            modalIngredientFeedback.classList.add('success');
+        }
+    }
+}
+
+// Helper function to compare and highlight inputs
+function highlightInputChanges(newWeight, newNutrientsPercent) {
+    const tolerance = 0.01; // Tolerance for float comparison
+    
+    // Weight
+    if (modalIngredientWeightInput) {
+        const oldWeight = previousIngredientModalState.weight || 0;
+        if (Math.abs(newWeight - oldWeight) > tolerance) {
+            modalIngredientWeightInput.classList.add(newWeight > oldWeight ? 'input-increased' : 'input-decreased');
+        } else {
+             modalIngredientWeightInput.classList.remove('input-increased', 'input-decreased');
+        }
+    }
+    
+    // Nutrients
+    const nutrientInputsMap = {
+        protein: modalIngredientProteinInput,
+        fat:     modalIngredientFatInput,
+        carbs:   modalIngredientCarbsInput,
+        water:   modalIngredientWaterInput,
+        fiber:   modalIngredientFiberInput,
+        salt:    modalIngredientSaltInput
+    };
+
+    for (const key in newNutrientsPercent) {
+        const inputElement = nutrientInputsMap[key];
+        if (inputElement && previousIngredientModalState.nutrients) {
+            const oldValue = parseFloat(previousIngredientModalState.nutrients[key]) || 0;
+            const newValue = parseFloat(newNutrientsPercent[key]) || 0;
+            inputElement.classList.remove('input-increased', 'input-decreased'); // Reset first
+            if (Math.abs(newValue - oldValue) > tolerance) {
+                 inputElement.classList.add(newValue > oldValue ? 'input-increased' : 'input-decreased');
+            }
+        }
     }
 }
 
@@ -714,8 +904,8 @@ function updateAdventureDisplay() {
                                 </button>
                             </div>
                         </div>
-                        <p>Weight: ${ingredientData.recipeWeight || 0}g</p>
-                        <p>Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</p>
+                        <p>Recipe Weight: ${ingredientData.recipeWeight || 0}g</p>
+                        <p>Recipe W. Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</p>
                     `;
                     // Store the full ingredient data on the modify button for the modal
                     card.querySelector('.modify-button').dataset.ingredientData = JSON.stringify(ingredientData);
@@ -930,6 +1120,27 @@ async function initializeDemo() {
 
     // Ensure the adventure info is hidden initially by updateAdventureDisplay
     updateAdventureDisplay(); 
+
+    // Add Enter key listeners for new modal nutrient inputs
+    const nutrientInputs = [
+        modalIngredientProteinInput,
+        modalIngredientFatInput,
+        modalIngredientCarbsInput,
+        modalIngredientWaterInput,
+        modalIngredientFiberInput,
+        modalIngredientSaltInput
+    ];
+
+    nutrientInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    updateIngredient();
+                }
+            });
+        }
+    });
 }
 
 // Start the demo when the page loads

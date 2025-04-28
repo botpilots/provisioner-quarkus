@@ -532,4 +532,91 @@ button:hover {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border: 0;
+}
+
+/* Modal Feedback Area */
+.modal-feedback {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    min-height: 1.5em; /* Prevent layout shift when empty */
+    text-align: center;
+    display: none; /* Hidden by default */
+}
+
+.modal-feedback.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+.modal-feedback.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+/* Input Highlighting */
+.modal input.input-increased {
+    border-color: #28a745; /* Green */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.modal input.input-decreased {
+    border-color: #dc3545; /* Red */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Modal Footer Styling */
+.modal-footer {
+    display: flex;
+    justify-content: space-between; /* Pushes feedback left, button right */
+    align-items: center; /* Vertically align items */
+    margin-top: 20px; /* Add space above the footer */
+}
+
+/* Adjust feedback style for footer layout */
+.modal-footer .modal-feedback {
+    margin: 0; /* Reset margins */
+    padding: 0; /* Reset padding */
+    border: none; /* Remove border */
+    background-color: transparent; /* Remove background */
+    text-align: left; /* Align text left */
+    min-height: auto; /* Reset min-height */
+    flex-grow: 1; /* Allow feedback area to take space */
+    margin-right: 15px; /* Add space between feedback and button */
+    display: block; /* Ensure it's visible */
+}
+
+.modal-footer .modal-feedback.error {
+    color: #dc3545; /* Red text for errors */
+    background-color: transparent;
+    border: none;
+}
+
+.modal-footer .modal-feedback.success {
+    color: #28a745; /* Green text for success */
+    background-color: transparent;
+    border: none;
+}
+
+/* Adjust button style */
+.modal-footer .modal-add-button {
+    margin: 0; /* Reset margins */
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* Input Highlighting */
+.modal input.input-increased {
+    border-color: #28a745; /* Green */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.modal input.input-decreased {
+    border-color: #dc3545; /* Red */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 } 
