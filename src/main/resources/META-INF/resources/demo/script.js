@@ -840,7 +840,8 @@ function updateAdventureDisplay() {
     const selectedIngredientDetailsDiv = document.getElementById('selectedIngredientDetails');
 
     if (!currentAdventure) {
-        if (adventureTitle) adventureTitle.textContent = 'Adventure Information';
+        if (adventureTitle) adventureTitle.textContent = 'Create or select an adventure';
+        if (adventureTitle) adventureTitle.style.display = 'block';
         if (setDaysButton) setDaysButton.style.display = 'none'; // Hide Set Days button
         if (adventureInfoDiv) adventureInfoDiv.style.display = 'none';
         if (selectedMealSection) selectedMealSection.style.display = 'none'; // Hide whole section
@@ -857,10 +858,9 @@ function updateAdventureDisplay() {
     }
 
     // --- Update Adventure Section --- 
-    if (adventureTitle) adventureTitle.textContent = `Adventure: ${currentAdventure.name || 'Unnamed'}`;
     if (setDaysButton) setDaysButton.style.display = 'inline-block'; // Show Set Days button
     if (adventureInfoDiv) adventureInfoDiv.style.display = 'block'; // Show the main info block
-    
+    if (adventureTitle) adventureTitle.style.display = 'none';
     // Update Adventure Basic Info
     document.getElementById('adventureNameDisplay').textContent = currentAdventure.name || '-';
     document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 0} days`;

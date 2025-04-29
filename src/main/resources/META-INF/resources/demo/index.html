@@ -23,7 +23,6 @@
     </header>
 
     <main class="container">
-		<h1>Create or select an adventure</h1>
         <!-- Top Section for Adventure Creation/Selection -->
         <div class="top-section">
             <!-- Create Adventure -->
@@ -51,11 +50,13 @@
 
         <!-- Adventure Information Section -->
         <div class="adventure-info-section section">
-             <div class="section-header">
-                 <h2 id="adventureTitle">Adventure Information</h2>
-                 <button class="add-button-inline" onclick="openSetDaysModal()" id="setDaysButton" style="display: none;">+ Set Days</button>
-             </div>
+			<p id="adventureTitle">Adventure</p>
+
             <div id="adventureInfo" style="display: none;">
+				<div class="section-header">
+					<h2 id="adventureTitle">Adventure</h2>
+					<button class="add-button-inline" onclick="openSetDaysModal()" id="setDaysButton" style="display: none;">+ Set Days</button>
+				</div>
                 <div class="info-group two-column">
                     <div class="info-column">
                         <h3>Basic Info</h3>
@@ -195,7 +196,6 @@
             <img src="/graphics/logo_sun.svg" alt="Provisioner Sun Logo" class="footer-logo">
             <nav class="footer-nav">
                  <ul>
-                    <li><a href="#">Privacy Policy</a></li>
                     <li><a href="#">Terms of Service</a></li>
                 </ul>
             </nav>

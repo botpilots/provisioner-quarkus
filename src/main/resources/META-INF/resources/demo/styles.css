@@ -15,8 +15,11 @@
     --text-medium: #bdbdbd; /* Lighter grey for secondary text */
     --text-dark: #333333; /* Dark text for light backgrounds (if used) */
     --accent-primary: #c77d40; /* Earthy orange */
-    --accent-secondary: #7e8d6a; /* Muted green */
+    --accent-primary-light: #e08f50; /* Lighter orange for hover/gradient */
+    --accent-secondary: #4a7c82; /* Petrol/Teal */
+    --accent-secondary-light: #6aa2a8; /* Lighter Petrol/Teal for hover/gradient */
     --accent-danger: #a64d4d; /* Muted red */
+    --accent-danger-light: #bf5e5e; /* Lighter red for hover/gradient */
     --border-color: #5f5f5f; /* Darker border */
     --font-primary: "Merriweather Sans", sans-serif; /* Merriweather Sans: weights 300-800 */
     --font-heading: "Montserrat", sans-serif; /* Montserrat: weights 100-900 */
@@ -176,6 +179,13 @@ h3 {
     flex: 1;
 }
 
+/* Ensure adventure remove button matches create button size */
+.adventure-selection .remove-button {
+    padding: 10px 12px; /* Match general button padding */
+    line-height: normal; /* Reset line-height if needed */
+    height: auto; /* Reset height if needed */
+}
+
 /* --- Adventure Info Section --- */
 .adventure-info-section {
     /* Inherits .section styles */
@@ -190,23 +200,28 @@ h3 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    padding: 15px 20px;
-    background-color: var(--bg-medium);
-    border: 1px solid var(--border-color);
-    border-radius: 6px 6px 0 0; /* Rounded top corners */
+    padding: 0; /* Remove padding */
+    /* Remove background/border to merge with content */
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
 }
 
 .section-header h2 {
     margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
+    border-bottom: 1px solid var(--border-color); /* Keep border on title */
+    padding-bottom: 10px; /* Add padding below title */
+    width: 100%; /* Make title take full width */
+    display: flex; /* Use flex to align button */
+    justify-content: space-between;
+    align-items: center;
 }
 
 .adventure-info-section #adventureInfo {
     background-color: var(--bg-medium);
     border: 1px solid var(--border-color);
     border-top: none; /* Avoid double border */
-    border-radius: 0 0 6px 6px; /* Rounded bottom corners */
+    border-radius: 6px; /* Apply border radius to the main container */
     padding: 20px;
     box-shadow: 0 2px 5px var(--shadow-color);
 }
@@ -265,16 +280,21 @@ button {
     border: none;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    background-image: linear-gradient(to bottom, var(--accent-primary-light), var(--accent-primary));
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 button:hover {
-    background-color: #e08f50; /* Lighter orange on hover */
-    transform: translateY(-1px);
+    background-color: var(--accent-primary-light);
+    background-image: linear-gradient(to bottom, #f0a56f, var(--accent-primary-light)); /* Slightly lighter gradient on hover */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 button:active {
     transform: translateY(0px);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to top, var(--accent-primary-light), var(--accent-primary)); /* Invert gradient slightly on press */
 }
 
 .add-button-inline {
@@ -282,21 +302,31 @@ button:active {
     font-size: 0.9em;
     margin-left: 15px;
     flex-shrink: 0;
-    background-color: var(--accent-secondary); /* Green for add buttons */
+    background-color: var(--accent-secondary); /* Use petrol color */
+    background-image: linear-gradient(to bottom, var(--accent-secondary-light), var(--accent-secondary));
 }
 
 .add-button-inline:hover {
-    background-color: #97a883; /* Lighter green */
+    background-color: var(--accent-secondary-light);
+    background-image: linear-gradient(to bottom, #7aaeb3, var(--accent-secondary-light)); /* More subtle lighter gradient on hover */
+}
+
+.add-button-inline:active {
+    transform: translateY(0px);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to top, var(--accent-secondary-light), var(--accent-secondary)); /* Use secondary colors */
 }
 
 .remove-button {
     background-color: var(--accent-danger);
     padding: 5px;
     line-height: 0;
+    background-image: linear-gradient(to bottom, var(--accent-danger-light), var(--accent-danger));
 }
 
 .remove-button:hover {
-    background-color: #bf5e5e; /* Lighter red */
+    background-color: var(--accent-danger-light);
+    background-image: linear-gradient(to bottom, #d47979, var(--accent-danger-light)); /* Slightly lighter gradient on hover */
 }
 
 .icon-button {
@@ -313,7 +343,8 @@ button:active {
 }
 
 .modify-button:hover {
-    background-color: #e08f50;
+    background-color: var(--accent-primary-light);
+    background-image: linear-gradient(to bottom, #f0a56f, var(--accent-primary-light));
 }
 
 /* --- Info Display --- */
@@ -692,10 +723,18 @@ button:active {
     background-color: var(--accent-secondary);
     color: var(--text-light);
     flex-shrink: 0;
+    background-image: linear-gradient(to bottom, var(--accent-secondary-light), var(--accent-secondary));
 }
 
 .modal-footer .modal-reset-button:hover {
-    background-color: #97a883;
+    background-color: var(--accent-secondary-light);
+    background-image: linear-gradient(to bottom, #7aaeb3, var(--accent-secondary-light)); /* More subtle lighter gradient on hover */
+}
+
+.modal-footer .modal-reset-button:active {
+    transform: translateY(0px);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    background-image: linear-gradient(to top, var(--accent-secondary-light), var(--accent-secondary)); /* Use secondary colors */
 }
 
 /* --- Footer --- */
