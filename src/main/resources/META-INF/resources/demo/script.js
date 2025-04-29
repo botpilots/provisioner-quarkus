@@ -784,7 +784,7 @@ function updateAdventureDisplay() {
     document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 0} days`;
     document.getElementById('adventureCrewSize').textContent = `${currentAdventure.crewSize || 0} persons`;
     document.getElementById('adventureCrewDailyKcalNeed').textContent = `${currentAdventure.crewDailyKcalNeed || 0} kCal / day`;
-    document.getElementById('adventureWeight').textContent = `${currentAdventure.weight || 0} kg`;
+    document.getElementById('adventureWeight').textContent = `${(currentAdventure.weight || 0).toFixed(3)} kg`;
     document.getElementById('adventureEnergyDensity').textContent = `${currentAdventure.formattedEnergyDensity || '0.0'} kCal / kg`;
 
     // Render Adventure Nutrients
@@ -837,9 +837,9 @@ function updateAdventureDisplay() {
                             <img src="/graphics/icons/trash.svg" alt="Remove" class="icon-button">
                         </button>
                     </div>
-                    <p>Weight: ${meal.weight || 0}g</p>
-                    <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'}</p>
-                    <p>Ratio: ${Math.round(mealData.ratio*100) + ' %' || '0.0'}</p>
+                    <p>Calc. Weight: ${(currentAdventure.childWeights && currentAdventure.childWeights[meal.id] !== undefined ? currentAdventure.childWeights[meal.id].toFixed(3) : '0.000')} kg</p>
+                    <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'} kCal / kg</p>
+                    <p>Ratio: ${Math.round(mealData.ratio*100) || '0.0'} %</p>
                     <p>${(meal.allChildren && Array.isArray(meal.allChildren) ? meal.allChildren.length : 0)} ingredients</p>
                 `;
                 // Pass the full meal object from currentAdventure to preserve nutrientMap
@@ -877,9 +877,13 @@ function updateAdventureDisplay() {
         if (addIngredientButton) addIngredientButton.style.display = 'inline-block'; // Show Add Ingredient button
 
         document.getElementById('selectedMealName').textContent = meal.name || 'Unknown';
-        document.getElementById('selectedMealWeight').textContent = `${meal.weight || 0}g`;
-        document.getElementById('selectedMealEnergyDensity').textContent = meal.formattedEnergyDensity || '0.0';
-        document.getElementById('selectedMealRatio').textContent = `${(mealRatio * 100).toFixed(1)}%`;
+        // Use the weight from the adventure's childWeights map
+        const calculatedMealWeight = (currentAdventure.childWeights && currentAdventure.childWeights[meal.id] !== undefined)
+            ? currentAdventure.childWeights[meal.id]
+            : 0;
+        document.getElementById('selectedMealWeight').textContent = `${calculatedMealWeight.toFixed(3)} kg`;
+        document.getElementById('selectedMealEnergyDensity').textContent = `${meal.formattedEnergyDensity || '0.0'} kCal / kg`;
+        document.getElementById('selectedMealRatio').textContent = `${(mealRatio * 100).toFixed(1)} %`;
 
         // Render Meal Nutrients
         renderNutrients(meal.nutrientsMap, 'selectedMealNutrients');
@@ -904,8 +908,9 @@ function updateAdventureDisplay() {
                                 </button>
                             </div>
                         </div>
-                        <p>Recipe Weight: ${ingredientData.recipeWeight || 0}g</p>
-                        <p>Recipe W. Ratio: ${(ingredientData.ratio * 100).toFixed(1)}%</p>
+                        <p>Recipe Weight: ${ingredientData.recipeWeight || 0} g</p>
+                        <p>Recipe W. Ratio: ${(ingredientData.ratio * 100).toFixed(1)} %</p>
+                        <p>Calc. value: ${(currentAdventure.ingredientWeights && currentAdventure.ingredientWeights[ingredient.id] !== undefined ? currentAdventure.ingredientWeights[ingredient.id].toFixed(3) : '0.000')} kg</p>
                     `;
                     // Store the full ingredient data on the modify button for the modal
                     card.querySelector('.modify-button').dataset.ingredientData = JSON.stringify(ingredientData);
@@ -960,6 +965,10 @@ function updateAdventureDisplay() {
              document.getElementById('selectedIngredientName').textContent = ingredient.name || 'Unknown';
              document.getElementById('selectedIngredientWeight').textContent = `${ingredientWeight || 0}g`;
              document.getElementById('selectedIngredientRatio').textContent = `${(ingredientRatio * 100).toFixed(1)}%`;
+             const calculatedIngredientWeight = (currentAdventure.ingredientWeights && currentAdventure.ingredientWeights[ingredient.id] !== undefined)
+                ? currentAdventure.ingredientWeights[ingredient.id]
+                : 0;
+             document.getElementById('selectedIngredientCalcWeight').textContent = `${calculatedIngredientWeight.toFixed(3)} kg`;
      
              // Render Ingredient Nutrients
              renderNutrients(ingredient.nutrientsMap, 'selectedIngredientNutrients');

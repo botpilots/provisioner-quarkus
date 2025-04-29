@@ -34,6 +34,8 @@ public class Adventure extends BaseClass  {
 
 	public void setMealAndIngredientWeights() {
 
+		Log.info("setMealAndIngredientWeights run");
+
 		ingredientWeights.clear();
 
 		setChildWeights(); // Ingredient weights depends on an updated childWeights field.
@@ -43,15 +45,27 @@ public class Adventure extends BaseClass  {
 		for (SafeID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in
 											// ingredientWeights.
 
+			Log.info("Meal");
+
 			Map<SafeID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
 
 			Set<SafeID> ingredientKeys = mealIngredients.keySet();
 
 			for (SafeID ingredientKey : ingredientKeys) {
+				Log.info("Ingredient");
+				Log.info("key: " + ingredientKey);
+				Log.info("mealweight: " + childWeights.get(mealKey));
+				Log.info("ratio ingred: " + mealIngredients.get(ingredientKey).getRatio());
 				// NOTE: Since there's no direct connection to this object and the ingredient,
 				// we use the id of the ingredient itself.
 				ingredientWeights.put(ingredientKey,
 						childWeights.get(mealKey) * mealIngredients.get(ingredientKey).getRatio());
+
+			if (!ingredientWeights.containsKey(ingredientKey)) {
+				throw new IllegalArgumentException("Ingredient weight with key " + ingredientKey + " could not be added to ingredientWeights.");
+			} else {
+				Log.info("Ingredient weight with key " + ingredientKey + " was successfully added to ingredientWeights, with weight: " + ingredientWeights.get(ingredientKey));
+			}
 			}
 		}
 	}
@@ -217,6 +231,11 @@ public class Adventure extends BaseClass  {
 		return String.format("%.1f", ratio * 100);
 	}
 
+	// NOTE: Used in template.
+	public Map<SafeID, Double> getIngredientWeights() {
+		return ingredientWeights;
+	}
+
 	public void removeCrewMember(SafeID id) {
 		crewMemberMap.remove(id);
 		if (crewMemberMap.containsKey(id)) {
@@ -232,6 +251,7 @@ public class Adventure extends BaseClass  {
 	// Override updateAndPropagate
 	@Override
 	protected void updateAndPropagate() {
+		Log.info("Update and propagate run");
 		// 1. Perform Adventure-specific recalculations *first*
 		this.updateNameIndex(); // Ensure name index is up-to-date
 		// Note: setCrewDailyKcalNeed is implicitly called by put/remove crew member before this
