@@ -6,6 +6,7 @@ import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 
 public class NutrientsMap extends AbstractMap<String, Double> {
     private final Map<String, Double> nutrientsMap = new LinkedHashMap<>();
@@ -46,45 +47,35 @@ public class NutrientsMap extends AbstractMap<String, Double> {
         double potentialSum = currentSum - oldValue + value;
 
         if (potentialSum > 1.0 + TOLERANCE) {
-            // Stealing logic: Reduce other nutrients proportionally
-            double increase = value - oldValue;
-            double otherSum = currentSum - oldValue;
-
-            if (otherSum < TOLERANCE || increase >= otherSum) {
-                // Cannot steal enough, or other nutrients are zero.
-                // Set current key to 1.0 and others to 0.0.
-                Log.infof("Nutrient '%s' set to 100%%, others cleared (increase=%.4f, otherSum=%.4f)", key, increase, otherSum);
-                value = 1.0; // Ensure the target value is 1.0
-                nutrientsMap.put(key, value);
-                for (String k : nutrientsMap.keySet()) {
-                    if (!k.equals(key)) {
-                        nutrientsMap.put(k, 0.0);
-                    }
-                }
-            } else {
-                // Steal proportionally from others
-                double scaleFactor = (otherSum - increase) / otherSum;
-                Log.infof("Nutrient '%s' increase causes stealing. Scale factor for others: %.4f", key, scaleFactor);
-                nutrientsMap.put(key, value); // Set the target value first
-                for (Map.Entry<String, Double> entry : nutrientsMap.entrySet()) {
-                    if (!entry.getKey().equals(key)) {
-                        nutrientsMap.put(entry.getKey(), entry.getValue() * scaleFactor);
-                    }
-                }
-                // Optional: Verify sum after stealing (for debugging)
-                // double finalSum = sumRatios();
-                // if (Math.abs(finalSum - 1.0) > TOLERANCE) {
-                //     Log.warnf("NutrientsMap sum after stealing is %.4f, expected 1.0.", finalSum);
-                // }
-            }
+            throw new IllegalArgumentException(String.format(Locale.US,
+                "Cannot set %s to %.1f%%. Overshoot by  %.1f%%",
+                key, value * 100, (potentialSum-1) * 100));
         } else {
             // Normal case: just update the value
             nutrientsMap.put(key, value);
-            // We might still need normalization if potentialSum < 1.0
-            // This is handled externally by Ingredient.normalizeNutrientRatiosAndPropagate()
+            // Normalization, if needed (when sum < 1.0), is handled externally.
         }
-        
+
         return value;
+    }
+    
+    /**
+     * Internal put method that bypasses the potentialSum check.
+     * Used by batch update methods that have already validated the final sum.
+     * Still performs basic key and negative value checks.
+     */
+    public Double internalPut(String key, Double value) {
+        if (!nutrientsMap.containsKey(key)) {
+            throw new IllegalArgumentException("Invalid nutrient key: " + key);
+        }
+        if (value < 0.0) {
+             throw new IllegalArgumentException("Nutrient value cannot be negative: " + value);
+        }
+        // Clamp value at 1.0 maximum
+        value = Math.min(value, 1.0);
+
+        // Direct put without sum validation
+        return nutrientsMap.put(key, value);
     }
     
     public Double updateNutrient(String key, Double value) {

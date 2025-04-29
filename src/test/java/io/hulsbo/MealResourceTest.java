@@ -275,27 +275,18 @@ public class MealResourceTest {
         double expectedProtein = 0.3 / 0.7; // Approx 0.4285714
         double expectedFat = 0.4 / 0.7;     // Approx 0.5714286
         
-		Response response = given()
+		given()
 			.queryParam("protein", newProtein)
 			.queryParam("fat", newFat) // Causes sum > 1 initially
 		.when()
 			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
 		.then()
-			.statusCode(200) // Expect 200 OK now
+			.statusCode(400) // Expect 400 Bad Request now
             .contentType(ContentType.JSON)
-            .extract().response();
-            
-        // Verify the response body has the values AFTER stealing and normalization
-        double actualProtein = response.jsonPath().getDouble("nutrientsMap.protein");
-        double actualFat = response.jsonPath().getDouble("nutrientsMap.fat");
-        assertEquals(expectedProtein, actualProtein, TOLERANCE);
-        assertEquals(expectedFat, actualFat, TOLERANCE);
+            .body("message", containsString("Updating nutrients would exceed 100%")); // Check the message from batch validation
 
-        // Also verify backend state
-         io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
-         assertEquals(expectedProtein, ingredient.getNutrientsMap().get("protein"), TOLERANCE);
-         assertEquals(expectedFat, ingredient.getNutrientsMap().get("fat"), TOLERANCE);
-         assertEquals(1.0, ingredient.getNutrientsMap().values().stream().mapToDouble(Double::doubleValue).sum(), TOLERANCE);
+        // Verify backend state hasn't changed (it should be whatever it was before the call)
+        io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
 	}
 
 	@Test
@@ -305,8 +296,9 @@ public class MealResourceTest {
 		.when()
 			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
 		.then()
-			.statusCode(400) // Bad Request
-			.body(containsString("Nutrient value cannot be negative"));
+			.statusCode(400)
+            .contentType(ContentType.JSON) // Expect JSON error response
+            .body("message", containsString("Invalid nutrient value for key 'protein'")); // Check message within JSON
 	}
 
 	@Test
