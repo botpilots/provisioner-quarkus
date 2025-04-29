@@ -1,0 +1,622 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* New Top Section Styling */
+.top-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.top-section .form-group {
+    flex: 1; /* Allow groups to grow */
+    min-width: 300px; /* Minimum width before wrapping */
+}
+
+.inline-form-group .input-button-row {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Align items vertically */
+}
+
+.inline-form-group input[type="text"] {
+    flex-grow: 1; /* Allow input to take available space */
+    margin-bottom: 0; /* Remove bottom margin */
+}
+
+.inline-form-group button {
+    flex-shrink: 0; /* Prevent button from shrinking */
+    margin: 0; /* Remove default margin */
+}
+
+/* Adventure Info Section Styling */
+.adventure-info-section {
+    margin-bottom: 20px;
+    /* Inherits .section styles */
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px; /* Space below header */
+}
+
+.section-header h2 {
+    margin-bottom: 0; /* Remove bottom margin from h2 inside header */
+}
+
+/* Main Content Area (Remaining Inputs) */
+.main-content {
+    display: flex; /* Keep flex for potential future use */
+    gap: 20px;
+}
+
+.left-column {
+    flex: 1; /* Let the left column take available space */
+    /* Remove max-width or adjust as needed */
+    /* max-width: 600px; */
+}
+
+.right-column {
+     /* Hide the empty right column for now */
+    display: none;
+    /* flex: 1; */
+    /* min-width: 600px; */
+}
+
+.section {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+h2 {
+    margin-bottom: 15px;
+    color: #444;
+    font-size: 1.3em;
+}
+
+h3 {
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.input-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+input, select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 0.9em;
+}
+
+input[type="text"] {
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Inline Add Button */
+.add-button-inline {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    margin-left: 15px; /* Add some space between title and button */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.add-button-inline:hover {
+    background-color: #0056b3;
+}
+
+/* Adventure Info Styles */
+.info-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.info-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Add space below header */
+}
+
+.info-group-header h3 {
+    margin-bottom: 0; /* Remove default bottom margin */
+}
+
+.info-group.two-column {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow columns to wrap */
+}
+
+.info-column {
+    flex: 1;
+    min-width: 300px; /* Minimum width for info columns */
+}
+
+.info-item {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.label {
+    font-weight: bold;
+    width: 150px;
+    color: #666;
+    text-align: left;
+    padding-right: 10px;
+}
+
+.value {
+    flex: 1;
+    color: #333;
+}
+
+/* List Container Styles */
+.list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* Base Card Style (Crew, Meal, Ingredient) */
+.crew-card,
+.meal-card,
+.ingredient-card {
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.crew-card:hover,
+.meal-card:hover,
+.ingredient-card:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crew-card h4,
+.meal-card h4,
+.ingredient-card h4 {
+    margin-bottom: 8px;
+    color: #333;
+    word-break: break-word; /* Prevent long names overflowing */
+}
+
+.crew-card p,
+.meal-card p,
+.ingredient-card p {
+    margin: 4px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* Card Header Adjustments */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to top */
+    margin-bottom: 10px;
+    gap: 5px; /* Gap between title and buttons */
+}
+
+.card-header h4 {
+    margin: 0;
+    flex-grow: 1; /* Allow title to take space */
+}
+
+.card-header .button-group {
+    display: flex;
+    gap: 5px; /* Space between buttons */
+    flex-shrink: 0; /* Prevent button group shrinking */
+}
+
+.card-header .button-group button {
+    padding: 4px 8px;
+    font-size: 0.8em;
+    margin: 0; /* Reset default button margins */
+}
+
+/* Modify Button Style */
+.modify-button {
+    background-color: #007bff;
+}
+
+.modify-button:hover {
+    background-color: #0056b3;
+}
+
+/* Remove Button (specific adjustments if needed) */
+.remove-button {
+    background-color: #dc3545;
+    line-height: 0; /* Helps vertical centering for img */
+}
+
+.remove-button:hover {
+    background-color: #c82333;
+}
+
+/* Style for icons inside buttons */
+.icon-button {
+    height: 1.2em; 
+    width: auto;
+    vertical-align: middle; /* Align icon vertically */
+    /* Optional: Add some spacing if needed */
+    /* margin: 0 2px; */ 
+}
+
+/* Selected Meal Details */
+.meal-details {
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.ingredients-section {
+    margin-top: 15px; /* Add space above ingredients list */
+}
+
+.ingredients-section h3 {
+    margin-bottom: 8px;
+}
+
+/* Selected States */
+.crew-card.selected,
+.meal-card.selected,
+.ingredient-card.selected {
+    background-color: #e0f7fa; /* Light blue selection */
+    border-color: #007bff; /* Blue border */
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.adventure-selection {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.adventure-selection select {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.9em;
+}
+
+/* Nutrient List Styles */
+.nutrients-list {
+    margin-top: 10px;
+}
+
+.nutrient-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.nutrient-item:last-child {
+    border-bottom: none;
+}
+
+.nutrient-name {
+    color: #555;
+    text-transform: capitalize;
+}
+
+.nutrient-value {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Specific layout for meal details */
+.meal-details .two-column-layout {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px; /* Add space below the columns */
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.meal-details .info-column {
+    min-width: 250px; /* Adjust min-width for meal details columns */
+}
+
+/* Ingredient Details Section (for selected ingredient display) */
+.ingredient-details-section {
+    /* Inherits .info-group and .two-column styles */
+}
+
+.ingredient-details-section .info-column {
+    min-width: 250px; /* Consistent min-width */
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% from the top and centered */
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%; /* Default width */
+    max-width: 700px; /* Maximum width */
+    border-radius: 8px;
+    position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.modal-content h4 {
+    margin-top: 15px; /* Space above sub-headings in modal */
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Space between direct child groups in the modal */
+.modal-content > .input-group,
+.modal-content > .input-row,
+.modal-content > .modal-add-button {
+    margin-top: 15px; /* Space between groups in modal */
+}
+
+/* Smaller modal variant */
+.modal-small .modal-content {
+    max-width: 400px;
+    margin-top: 15%; /* Adjust vertical position */
+}
+
+.modal-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Vertically align items */
+    margin-top: 15px; /* Space above the row */
+}
+
+.modal-input-row input {
+    flex-grow: 1; /* Input takes available space */
+    margin-top: 0; /* Reset margin */
+    margin-bottom: 0; /* Reset margin */
+}
+
+.modal-input-row button {
+    flex-shrink: 0; /* Prevent button shrinking */
+    margin-top: 0; /* Reset margin */
+}
+
+/* Nutrient display inside modal */
+.modal-nutrients {
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto; /* Add scroll if needed */
+}
+
+/* Add Button for Modal */
+.modal-add-button {
+	align-self: flex-end;
+}
+
+/* Close Button for Modal */
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Screen Reader Only class */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Modal Feedback Area */
+.modal-feedback {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    min-height: 1.5em; /* Prevent layout shift when empty */
+    text-align: center;
+    display: none; /* Hidden by default */
+}
+
+.modal-feedback.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+.modal-feedback.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+/* Input Highlighting */
+.modal input.input-increased {
+    border-color: #28a745; /* Green */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.modal input.input-decreased {
+    border-color: #dc3545; /* Red */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Modal Footer Styling */
+.modal-footer {
+    display: flex;
+    justify-content: space-between; /* Pushes feedback left, button right */
+    align-items: center; /* Vertically align items */
+    margin-top: 20px; /* Add space above the footer */
+}
+
+/* Adjust feedback style for footer layout */
+.modal-footer .modal-feedback {
+    margin: 0; /* Reset margins */
+    padding: 0; /* Reset padding */
+    border: none; /* Remove border */
+    background-color: transparent; /* Remove background */
+    text-align: left; /* Align text left */
+    min-height: auto; /* Reset min-height */
+    flex-grow: 1; /* Allow feedback area to take space */
+    margin-right: 15px; /* Add space between feedback and button */
+    display: block; /* Ensure it's visible */
+}
+
+.modal-footer .modal-feedback.error {
+    color: #dc3545; /* Red text for errors */
+    background-color: transparent;
+    border: none;
+}
+
+.modal-footer .modal-feedback.success {
+    color: #28a745; /* Green text for success */
+    background-color: transparent;
+    border: none;
+}
+
+/* Adjust button style */
+.modal-footer .modal-add-button {
+    margin: 0; /* Reset margins */
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* Input Highlighting */
+.modal input.input-increased {
+    border-color: #28a745; /* Green */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.modal input.input-decreased {
+    border-color: #dc3545; /* Red */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+} 

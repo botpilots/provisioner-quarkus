@@ -6,6 +6,7 @@ import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.HarrisBenedictR
 import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.KCalCalculationStrategy;
 import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.MifflinStJeor;
 import io.hulsbo.util.model.CrewMember.PhysicalActivity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.hulsbo.util.model.SafeID;
 
@@ -20,7 +21,9 @@ public class CrewMember {
     private final int weight;
     private final Gender gender;
     private final PhysicalActivity activity;
+    @JsonIgnore
     private final KCalCalculationStrategy kCalCalculationStrategy;
+    private final String strategy;
     private final OffsetDateTime creationTime;
     public KCalCalculationStrategy getkCalCalculationStrategy() {
         return kCalCalculationStrategy;
@@ -45,6 +48,7 @@ public class CrewMember {
         this.gender = Gender.valueOf(gender.toUpperCase());
         this.activity = PhysicalActivity.valueOf(activity.toUpperCase());
         this.kCalCalculationStrategy = someStrategy;
+        this.strategy = strategy;
         Manager.register(id, this);
     }
 
@@ -82,6 +86,10 @@ public class CrewMember {
 
     public OffsetDateTime getCreationTime() {
         return creationTime;
+    }
+
+    public String getStrategy() {
+        return strategy;
     }
 
     // Getters and setters if needed

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provisioner API Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Provisioner API Demo</h1>
+
+        <!-- Top Section for Adventure Creation/Selection -->
+        <div class="top-section">
+            <!-- Create Adventure -->
+            <div class="form-group inline-form-group">
+                <h3>Create Adventure</h3>
+                <div class="input-button-row">
+                    <input type="text" id="adventureName" placeholder="Adventure Name">
+                    <button onclick="createAdventure()">Create</button>
+                </div>
+            </div>
+
+            <!-- Adventure Selection -->
+            <div class="form-group">
+                <h3>Select Adventure</h3>
+                <div class="adventure-selection">
+                    <select id="adventureSelect" onchange="selectAdventure(this.value)">
+                        <option value="">Select an adventure...</option>
+                    </select>
+                    <button onclick="removeSelectedAdventure()" class="remove-button">
+                        <img src="/graphics/icons/trash.svg" alt="Remove Adventure" class="icon-button">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adventure Information Section -->
+        <div class="adventure-info-section section">
+             <div class="section-header">
+                 <h2 id="adventureTitle">Adventure Information</h2>
+                 <button class="add-button-inline" onclick="openSetDaysModal()" id="setDaysButton" style="display: none;">+ Set Days</button>
+             </div>
+            <div id="adventureInfo" style="display: none;">
+                <div class="info-group two-column">
+                    <div class="info-column">
+                        <h3>Basic Info</h3>
+                        <div class="info-item">
+                            <span class="label">Name:</span>
+                            <span id="adventureNameDisplay" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Duration:</span>
+                            <span id="adventureDuration" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Crew size:</span>
+                            <span id="adventureCrewSize" class="value">-</span>
+                        </div>
+                        <h3>Calc. values</h3>
+                        <div class="info-item">
+                            <span class="label">kCal need:</span>
+                            <span id="adventureCrewDailyKcalNeed" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Food weight:</span>
+                            <span id="adventureWeight" class="value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Food ED:</span>
+                            <span id="adventureEnergyDensity" class="value">-</span>
+                        </div>
+                    </div>
+                    <div class="info-column">
+                        <h3>Nutrients info</h3>
+                        <div id="adventureNutrients" class="nutrients-list"></div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-group-header">
+                        <h3>Crew Members</h3>
+                        <button class="add-button-inline" onclick="openAddCrewModal()">+ Add Crew</button>
+                    </div>
+                    <div id="crewMembersList" class="list-container"></div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-group-header">
+                        <h3>Meals</h3>
+                        <button class="add-button-inline" onclick="openAddMealModal()">+ Add Meal</button>
+                    </div>
+                    <div id="mealsList" class="list-container"></div>
+                </div>
+
+                <div class="info-group">
+                     <div class="info-group-header">
+                        <h3 id="selectedMealTitle">Selected Meal Details</h3>
+                         <button class="add-button-inline" onclick="openAddIngredientModal()" id="addIngredientButton" style="display: none;">+ Add Ingredient</button>
+                    </div>
+                    <div id="selectedMealDetails" class="meal-details info-group" style="display: none;">
+                        <div class="two-column-layout">
+                            <div class="info-column">
+                                <h3>Basic Info</h3>
+                                <div class="info-item">
+                                    <span class="label">Name:</span>
+                                    <span id="selectedMealName" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Calc. Weight:</span>
+                                    <span id="selectedMealWeight" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Energy Density:</span>
+                                    <span id="selectedMealEnergyDensity" class="value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Ratio in Adventure:</span>
+                                    <span id="selectedMealRatio" class="value">-</span>
+                                </div>
+                            </div>
+                            <div class="info-column">
+                                <h3>Nutrients info</h3>
+                                <div id="selectedMealNutrients" class="nutrients-list"></div>
+                            </div>
+                        </div>
+                        <div class="ingredients-section">
+                            <h3>Ingredients</h3>
+                            <div id="selectedMealIngredients" class="list-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <h3 id="selectedIngredientTitle">Selected Ingredient Details</h3>
+                    <div id="selectedIngredientDetails" class="ingredient-details-section info-group two-column" style="display: none;">
+                        <div class="info-column">
+                            <h3>Basic Info</h3>
+                            <div class="info-item">
+                                <span class="label">Name:</span>
+                                <span id="selectedIngredientName" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Weight in Meal:</span>
+                                <span id="selectedIngredientWeight" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Ratio in Meal:</span>
+                                <span id="selectedIngredientRatio" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Calc. value:</span>
+                                <span id="selectedIngredientCalcWeight" class="value">-</span>
+                            </div>
+                        </div>
+                        <div class="info-column">
+                            <h3>Nutrients info</h3>
+                            <div id="selectedIngredientNutrients" class="nutrients-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Column - Remaining Inputs -->
+            <div class="left-column">
+                <!-- Modify Ingredient Weight form group removed -->
+            </div>
+
+            <!-- Right Column - Display (Hidden) -->
+            <div class="right-column">
+                <!-- This column is now empty -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Crew Member Modal -->
+    <div id="addCrewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddCrewModal()">&times;</span>
+            <h3>Add Crew Member</h3>
+			<div class="input-group">
+				<label>Name</label>
+  				<input type="text" id="modalCrewName" placeholder="Name">
+			</div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Age</label>
+                    <input type="number" id="modalCrewAge" min="18" max="100" value="30">
+                </div>
+                <div class="input-group">
+                    <label>Height (cm)</label>
+                    <input type="number" id="modalCrewHeight" min="140" max="220" value="175">
+                </div>
+                <div class="input-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" id="modalCrewWeight" min="40" max="150" value="70">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Gender</label>
+                    <select id="modalCrewGender">
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Activity Level</label>
+                    <select id="modalCrewActivity">
+                        <option value="SEDENTARY">Sedentary</option>
+                        <option value="MILD">Mild</option>
+                        <option value="MODERATE">Moderate</option>
+                        <option value="HEAVY">Heavy</option>
+                        <option value="VERY_HEAVY">Very Heavy</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Strategy</label>
+                    <select id="modalCrewStrategy">
+                        <option value="harris_benedict_original">Harris-Benedict Original</option>
+                        <option value="harris_benedict_revised">Harris-Benedict Revised</option>
+                        <option value="mifflin_st_jeor">Mifflin-St Jeor</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="addCrewMember()" class="modal-add-button">Add Crew Member</button>
+        </div>
+    </div>
+
+    <!-- Add Meal Modal -->
+    <div id="addMealModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddMealModal()">&times;</span>
+            <h3>Add New Meal</h3>
+            <div class="modal-input-row">
+                 <label for="modalMealName" class="sr-only">Meal Name:</label> 
+                 <input type="text" id="modalMealName" placeholder="Enter name and press Enter...">
+                 <button onclick="addMeal()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Ingredient Modal -->
+    <div id="addIngredientModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeAddIngredientModal()">&times;</span>
+            <h3>Add New Ingredient</h3>
+             <div class="modal-input-row">
+                 <label for="modalIngredientName" class="sr-only">Ingredient Name:</label>
+                 <input type="text" id="modalIngredientName" placeholder="Enter name and press Enter...">
+                 <button onclick="addIngredient()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Days Modal -->
+    <div id="setDaysModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeSetDaysModal()">&times;</span>
+            <h3>Set Adventure Duration</h3>
+             <div class="modal-input-row">
+                 <label for="modalDays" class="sr-only">Number of Days:</label>
+                 <input type="number" id="modalDays" min="1" max="365" value="5" placeholder="Days...">
+                 <button onclick="setDays()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modify Ingredient Modal -->
+    <div id="modifyIngredientModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModifyIngredientModal()">&times;</span>
+            <h3>Modify Ingredient: <span id="modalIngredientModifyName">-</span></h3>
+            <input type="hidden" id="modalIngredientModifyId">
+            
+            <!-- Nutrient Inputs -->
+            <div class="input-group"> 
+                <label for="modalIngredientWeight">Weight (g)</label>
+                <input type="number" id="modalIngredientWeight" min="0" step="0.1" value="100"> 
+            </div>
+
+            <div class="input-group">
+                <label>Nutrient Ratios (%)</label>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="modalIngredientProtein">Protein</label>
+                        <input type="number" id="modalIngredientProtein" min="0" max="100" step="0.1" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="modalIngredientFat">Fat</label>
+                        <input type="number" id="modalIngredientFat" min="0" max="100" step="0.1" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="modalIngredientCarbs">Carbs</label>
+                        <input type="number" id="modalIngredientCarbs" min="0" max="100" step="0.1" value="0">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="modalIngredientWater">Water</label>
+                        <input type="number" id="modalIngredientWater" min="0" max="100" step="0.1" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="modalIngredientFiber">Fiber</label>
+                        <input type="number" id="modalIngredientFiber" min="0" max="100" step="0.1" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="modalIngredientSalt">Salt</label>
+                        <input type="number" id="modalIngredientSalt" min="0" max="100" step="0.1" value="0">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer: Feedback and Button -->
+            <div class="modal-footer">
+                <p id="modalIngredientFeedback" class="modal-feedback" aria-live="polite"></p> 
+                <button onclick="updateIngredient()" class="modal-add-button">Update Ingredient</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

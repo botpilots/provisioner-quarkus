@@ -5,201 +5,260 @@ import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.KCalCalculation
 import io.hulsbo.util.model.CrewMember.PhysicalActivity;
 import io.hulsbo.util.model.SafeID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
+import io.quarkus.logging.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Adventure extends BaseClass{
-    private final Map<SafeID, CrewMember> crewMemberMap = new LinkedHashMap<>();
-    private double crewDailyKcalNeed;
-    private int days;
-    private final Map<SafeID, Double> ingredientWeights = new LinkedHashMap<>();
+public class Adventure extends BaseClass  {
+	private final Map<SafeID, CrewMember> crewMemberMap = new LinkedHashMap<>();
+	private double crewDailyKcalNeed;
+	private int days;
+	private final Map<SafeID, Double> ingredientWeights = new LinkedHashMap<>();
 
-    public Adventure() {
+	public Adventure() {
 
-    }
+	}
 
-    @Override
-    public void setEnergyDensity() {
-        super.setEnergyDensity();
-        setWeight();
-    }
+	@Override
+	public void setEnergyDensity() {
+		super.setEnergyDensity();
+		setWeight();
+	}
 
-    public void setWeight() {
-        if (energyDensity != 0) {
-            this.weight = (crewDailyKcalNeed*days)/energyDensity;
-        }
-    }
+	public void setWeight() {
+		if (energyDensity != 0) {
+			this.weight = (crewDailyKcalNeed * days) / energyDensity;
+		}
+	}
 
-    public void setMealAndIngredientWeights() {
+	public void setMealAndIngredientWeights() {
 
-        ingredientWeights.clear();
+		Log.info("setMealAndIngredientWeights run");
 
-        setChildWeights(); // Ingredient weights depends on an updated childWeights field.
+		ingredientWeights.clear();
 
-        Set<SafeID> mealKeys = childWeights.keySet();
+		setChildWeights(); // Ingredient weights depends on an updated childWeights field.
 
-        for (SafeID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in ingredientWeights.
+		Set<SafeID> mealKeys = childWeights.keySet();
 
-            Map<SafeID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
+		for (SafeID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in
+											// ingredientWeights.
 
-            Set<SafeID> ingredientKeys = mealIngredients.keySet();
+			Log.info("Meal");
 
-            for (SafeID ingredientKey : ingredientKeys) {
-                // NOTE: Since there's no direct connection to this object and the ingredient, we use the id of the ingredient itself.
-                ingredientWeights.put(ingredientKey, childWeights.get(mealKey)*mealIngredients.get(ingredientKey).getRatio());
-            }
-        }
-    }
+			Map<SafeID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
 
-    public void setNutrientsMap() {
-       super.setNutrientsMap();
-       setCrewDailyKcalNeed();
-       setMealAndIngredientWeights();
-    }
+			Set<SafeID> ingredientKeys = mealIngredients.keySet();
 
-    /**
-     * Add a new meal to meals hashmap and the ratios hashmap using the same key.
-     *
-     * @return SafeID key of newChild
-     */
-    public SafeID putChild(Meal newMeal) {
-        double weightedValue = giveSpaceForAnotherEntry();
-        return super.putChild(newMeal, weightedValue, 0.0);
-    }
+			for (SafeID ingredientKey : ingredientKeys) {
+				Log.info("Ingredient");
+				Log.info("key: " + ingredientKey);
+				Log.info("mealweight: " + childWeights.get(mealKey));
+				Log.info("ratio ingred: " + mealIngredients.get(ingredientKey).getRatio());
+				// NOTE: Since there's no direct connection to this object and the ingredient,
+				// we use the id of the ingredient itself.
+				ingredientWeights.put(ingredientKey,
+						childWeights.get(mealKey) * mealIngredients.get(ingredientKey).getRatio());
 
-    public void putCrewMember(String name, int age, int height, int weight, String gender, String activity, String kCalCalculationStrategy) {
-        CrewMember newCrewMember = new CrewMember(name, age, height, weight, gender, activity, kCalCalculationStrategy);
-        crewMemberMap.put(newCrewMember.getId() , newCrewMember);
-        // NOTE: Registration in Manager is done in constructor.
-        setCrewDailyKcalNeed();
-    }
+			if (!ingredientWeights.containsKey(ingredientKey)) {
+				throw new IllegalArgumentException("Ingredient weight with key " + ingredientKey + " could not be added to ingredientWeights.");
+			} else {
+				Log.info("Ingredient weight with key " + ingredientKey + " was successfully added to ingredientWeights, with weight: " + ingredientWeights.get(ingredientKey));
+			}
+			}
+		}
+	}
 
-    public void setCrewDailyKcalNeed() {
-        int sum = 0;
-        for (CrewMember crewMember : crewMemberMap.values()) {
-            sum += crewMember.getDailyKCalNeed();
-        }
-        this.crewDailyKcalNeed = sum;
-        setWeight();
-    }
+	public void setNutrientsMapAndWeights() {
+		super.setNutrientsMapAndWeights();
+		setCrewDailyKcalNeed();
+		setMealAndIngredientWeights();
+	}
 
-    public void setDays(int days) {
-        if (days > 0) {
-            this.days = days;
-        } else {
-            throw new IllegalArgumentException("Days must be one or more.");
-        }
-    }
+	/**
+	 * Add a new meal to meals hashmap and the ratios hashmap using the same key.
+	 *
+	 * @return SafeID key of newChild
+	 */
+	public SafeID putChild(Meal newMeal) {
+		double weightedValue = giveSpaceForAnotherEntry();
+		return super.putChild(newMeal, weightedValue, 0.0);
+	}
 
-    public int getDays() {
-        return days;
-    }
+	public void putCrewMember(String name, int age, int height, int weight, String gender, String activity,
+			String kCalCalculationStrategy) {
+		CrewMember newCrewMember = new CrewMember(name, age, height, weight, gender, activity, kCalCalculationStrategy);
+		crewMemberMap.put(newCrewMember.getId(), newCrewMember);
+		// NOTE: Registration in Manager is done in constructor.
+		setCrewDailyKcalNeed();
 
-    public void getInfo() {
-        System.out.println();
-        System.out.println("Summary " + "of " + getClass().getSimpleName() + " \"" + getName() + "\":");
-        System.out.println();
-        System.out.println("Crew members: ".toUpperCase());
-        int i = 1;
-        for (CrewMember crewMember : crewMemberMap.values()) {
-            System.out.println();
-            System.out.printf("%25s %s %n", "Crew member " + i + ":", crewMember.getName());
-            System.out.printf("%25s %s %n", "Gender:"  ,crewMember.getGender().toString().toLowerCase());
-            System.out.printf("%25s %s %n", "Age:", crewMember.getAge());
-            System.out.printf("%25s %s %n", "Activity level:", crewMember.getActivity().toString().toLowerCase());
-            System.out.printf("%25s %.0f KCal %n", "Daily KCal need:", crewMember.getDailyKCalNeed());
+		// Trigger update propagation
+		this.updateAndPropagate();
+	}
 
-            i++;
-        }
-        System.out.println();
-        System.out.printf("%25s %.0f KCal %n", "Daily KCal need crew:", crewDailyKcalNeed);
+	public void setCrewDailyKcalNeed() {
+		int sum = 0;
+		for (CrewMember crewMember : crewMemberMap.values()) {
+			sum += crewMember.getDailyKCalNeed();
+		}
+		this.crewDailyKcalNeed = sum;
+		setWeight();
+	}
 
-        System.out.println();
+	public void setDays(int days) {
+		if (days > 0) {
+			this.days = days;
+		} else {
+			throw new IllegalArgumentException("Days must be one or more.");
+		}
 
-        System.out.printf("Meals for %s days:".toUpperCase(), days);
-        System.out.println();
-        System.out.println();
-        childMap.forEach((key, value) -> {
-            System.out.printf("%10s |", value.getChild().getName());
-            System.out.printf(" ratio: " + "%5.1f %%", childMap.get(key).getRatio()*100);
-            Set<String> nutrients = childMap.get(key).getChild().getNutrientsMap().keySet();
-            for (String nutrient : nutrients) {
-                System.out.printf( " | %s: %4.1f %%", nutrient, childMap.get(key).getChild().getNutrientsMap().get(nutrient)*100);
-            }
-            System.out.printf(" | calc. weight: " + "%4.2f kg", childWeights.get(childMap.get(key).getChild().getId()));
-            System.out.println();
-            System.out.println();
-            // For adventures, also sum each ingredient for each meal
-            Map<SafeID, ChildWrapper> childMapIngredient = value.getChild().childMap;
-            childMapIngredient.forEach((childMapIngredientKey, childMapIngredientValue) -> {
-                System.out.printf("%15s |", childMapIngredientValue.getChild().getName());
-                System.out.printf(" ratio: " + "%5.1f %%", childMapIngredient.get(childMapIngredientKey).getRatio()*100);
-                Set<String> ingredientNutrients = childMapIngredient.get(childMapIngredientKey).getChild().getNutrientsMap().keySet();
-                for (String nutrient : ingredientNutrients) {
-                    System.out.printf( " | %s: %4.1f %%", nutrient, childMapIngredient.get(childMapIngredientKey).getChild().getNutrientsMap().get(nutrient)*100);
-                }
-                System.out.printf(" | calc. weight: " + "%4.2f kg", ingredientWeights.get(childMapIngredient.get(childMapIngredientKey).getChild().getId()));
-                System.out.println();
-            });
-            System.out.println();
-        });
+		// Trigger update propagation
+		this.updateAndPropagate();
+	}
 
-        // Summary
-        System.out.printf("%10s |", getClass().getSimpleName());
+	public int getDays() {
+		return days;
+	}
 
-        Set<SafeID> children = childMap.keySet();
-        double sum = 0;
+	public void getInfo() {
+		System.out.println();
+		System.out.println("Summary " + "of " + getClass().getSimpleName() + " \"" + getName() + "\":");
+		System.out.println();
+		System.out.println("Crew members: ".toUpperCase());
+		int i = 1;
+		for (CrewMember crewMember : crewMemberMap.values()) {
+			System.out.println();
+			System.out.printf("%25s %s %n", "Crew member " + i + ":", crewMember.getName());
+			System.out.printf("%25s %s %n", "Gender:", crewMember.getGender().toString().toLowerCase());
+			System.out.printf("%25s %d %n", "Age:", crewMember.getAge());
+			System.out.printf("%25s %s %n", "Activity level:", crewMember.getActivity().toString().toLowerCase());
+			System.out.printf("%25s %d KCal %n", "Daily KCal need:", crewMember.getDailyKCalNeed());
 
-        for (SafeID id : children) {
-            sum += childMap.get(id).getRatio();
-        }
+			i++;
+		}
+		System.out.println();
+		System.out.printf("%25s %.0f KCal %n", "Daily KCal need crew:", crewDailyKcalNeed);
 
-        System.out.printf(" ratio: " + "%5.1f %%", sum * 100);
+		System.out.println();
 
-        Set<String> nutrients = getNutrientsMap().keySet();
-        for (String nutrient : nutrients) {
-            System.out.printf( " | %s: %4.1f %%", nutrient, getNutrientsMap().get(nutrient)*100);
-        }
-        System.out.printf(" | calc. weight: " + "%4.2f kg", getWeight());
-        System.out.println();
-        System.out.println();
-        System.out.printf("Energy Density of " + getClass().getSimpleName() + ": %4.0f KCal/Kg %n", energyDensity);
-        System.out.println();
-        System.out.println("END OF SUMMARY");
-    }
-    // NOTE: Used in template.
-    public int getCrewSize() {
-        return crewMemberMap.size();
-    }
-    // NOTE: Used in template.
+		System.out.println("MEALS FOR " + days + " DAYS:");
+		System.out.println();
+		System.out.println();
+		childMap.forEach((key, value) -> {
+			System.out.printf("%10s |", value.getChild().getName());
+			System.out.printf(" ratio: " + "%5.1f %%", childMap.get(key).getRatio() * 100);
+			Set<String> nutrients = childMap.get(key).getChild().getNutrientsMap().keySet();
+			for (String nutrient : nutrients) {
+				System.out.printf(" | %s: %4.1f %%", nutrient,
+						childMap.get(key).getChild().getNutrientsMap().get(nutrient) * 100);
+			}
+			System.out.printf(" | calc. weight: " + "%4.2f kg", childWeights.get(childMap.get(key).getChild().getId()));
+			System.out.println();
+			System.out.println();
+			// For adventures, also sum each ingredient for each meal
+			Map<SafeID, ChildWrapper> childMapIngredient = value.getChild().childMap;
+			childMapIngredient.forEach((childMapIngredientKey, childMapIngredientValue) -> {
+				System.out.printf("%15s |", childMapIngredientValue.getChild().getName());
+				System.out.printf(" ratio: " + "%5.1f %%",
+						childMapIngredient.get(childMapIngredientKey).getRatio() * 100);
+				Set<String> ingredientNutrients = childMapIngredient.get(childMapIngredientKey).getChild()
+						.getNutrientsMap().keySet();
+				for (String nutrient : ingredientNutrients) {
+					System.out.printf(" | %s: %4.1f %%", nutrient,
+							childMapIngredient.get(childMapIngredientKey).getChild().getNutrientsMap().get(nutrient)
+									* 100);
+				}
+				System.out.printf(" | calc. weight: " + "%4.2f kg",
+						ingredientWeights.get(childMapIngredient.get(childMapIngredientKey).getChild().getId()));
+				System.out.println();
+			});
+			System.out.println();
+		});
 
-    /**
-     * Get all crew members of this adventure, sorted from oldest to newest in creation time.
-     * @return List<CrewMember>
-     */
-    public List<CrewMember> getAllCrewMembers() {
-        return crewMemberMap.values().stream()
-                .sorted(Comparator.comparing(CrewMember::getCreationTime))
-                .collect(Collectors.toList());
-    }
+		// Summary
+		System.out.printf("%10s |", getClass().getSimpleName());
 
-    // NOTE: Used in template.
-    public int getCrewDailyKcalNeed() {
-        return (int) crewDailyKcalNeed;
-    }
+		Set<SafeID> children = childMap.keySet();
+		double sum = 0;
 
-    // NOTE: Used in template.
-    public String getFormattedTotalRatio() {
-        double ratio = childMap.values().stream()
-                .mapToDouble(ChildWrapper::getRatio)
-                .sum();
-        return String.format("%.1f", ratio * 100);
-    }
+		for (SafeID id : children) {
+			sum += childMap.get(id).getRatio();
+		}
 
+		System.out.printf(" ratio: " + "%5.1f %%", sum * 100);
 
-    public String removeCrewMember(SafeID id) {
-        crewMemberMap.remove(id);
-        return Manager.removeCrewMember(id);
-    }
+		Set<String> nutrients = getNutrientsMap().keySet();
+		for (String nutrient : nutrients) {
+			System.out.printf(" | %s: %4.1f %%", nutrient, getNutrientsMap().get(nutrient) * 100);
+		}
+		System.out.printf(" | calc. weight: " + "%4.2f kg", getWeight());
+		System.out.println();
+		System.out.println();
+		System.out.printf("Energy Density of " + getClass().getSimpleName() + ": %4.0f KCal/Kg %n", energyDensity);
+		System.out.println();
+		System.out.println("END OF SUMMARY");
+	}
+
+	// NOTE: Used in template.
+	public int getCrewSize() {
+		return crewMemberMap.size();
+	}
+	// NOTE: Used in template.
+
+	/**
+	 * Get all crew members of this adventure, sorted from oldest to newest in
+	 * creation time.
+	 * 
+	 * @return List<CrewMember>
+	 */
+	public List<CrewMember> getAllCrewMembers() {
+		return crewMemberMap.values().stream()
+				.sorted(Comparator.comparing(CrewMember::getCreationTime))
+				.collect(Collectors.toList());
+	}
+
+	// NOTE: Used in template.
+	public int getCrewDailyKcalNeed() {
+		return (int) crewDailyKcalNeed;
+	}
+
+	// NOTE: Used in template.
+	public String getFormattedTotalRatio() {
+		double ratio = childMap.values().stream()
+				.mapToDouble(ChildWrapper::getRatio)
+				.sum();
+		return String.format("%.1f", ratio * 100);
+	}
+
+	// NOTE: Used in template.
+	public Map<SafeID, Double> getIngredientWeights() {
+		return ingredientWeights;
+	}
+
+	public void removeCrewMember(SafeID id) {
+		crewMemberMap.remove(id);
+		if (crewMemberMap.containsKey(id)) {
+			throw new IllegalArgumentException("Crew member with id " + id + " could not be removed from adventure.");
+		} else {
+			Log.info("Crew member with id " + id + " was successfully removed from adventure.");
+		}
+
+		// Trigger update propagation
+		this.updateAndPropagate();
+	}
+
+	// Override updateAndPropagate
+	@Override
+	protected void updateAndPropagate() {
+		Log.info("Update and propagate run");
+		// 1. Perform Adventure-specific recalculations *first*
+		this.updateNameIndex(); // Ensure name index is up-to-date
+		// Note: setCrewDailyKcalNeed is implicitly called by put/remove crew member before this
+		// Note: setWeight is implicitly called by setNutrientsMapAndWeights
+		this.setNutrientsMapAndWeights(); // Updates energyDensity, mealWeights, ingredientWeights based on children
+
+		// 2. Then, call the base implementation to propagate upwards (if Adventures could be children)
+		super.updateAndPropagate();
+	}
 }

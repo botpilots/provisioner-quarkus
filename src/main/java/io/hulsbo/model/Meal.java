@@ -27,7 +27,7 @@ public SafeID putChild(Ingredient newIngredient) {
      */
     public void modifyWeightOfIngredient(SafeID id, double absWeight) {
         if (childMap.get(id) == null) {
-            throw new IllegalArgumentException("No Ingredient with such name exist.");
+            throw new IllegalArgumentException("No Ingredient with such an ID exist.");
         }
         if (absWeight == 0) {
             throw new IllegalArgumentException("The absWeight cannot be 0.");
@@ -50,5 +50,18 @@ public SafeID putChild(Ingredient newIngredient) {
             modifyRatio(key, weightedValue);
         }
 
+        // Trigger update propagation
+        this.updateAndPropagate();
+    }
+
+    // Override updateAndPropagate
+    @Override
+    protected void updateAndPropagate() {
+        // 1. Perform Meal-specific recalculations *first*
+        this.updateNameIndex(); // Ensure name index is up-to-date
+        this.setNutrientsMapAndWeights(); // Recalculates based on ingredient children
+
+        // 2. Then, call the base implementation to propagate upwards
+        super.updateAndPropagate();
     }
 }
