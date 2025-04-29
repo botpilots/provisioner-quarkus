@@ -571,6 +571,13 @@ button:hover {
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
+/* Style for disabled inputs in modal */
+.modal input:disabled {
+    background-color: #e9ecef; /* Light grey background */
+    cursor: not-allowed; /* Indicate non-interactive */
+    opacity: 0.7; /* Slightly faded */
+}
+
 /* Modal Footer Styling */
 .modal-footer {
     display: flex;
@@ -610,13 +617,21 @@ button:hover {
     flex-shrink: 0; /* Prevent button from shrinking */
 }
 
-/* Input Highlighting */
-.modal input.input-increased {
-    border-color: #28a745; /* Green */
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+/* Style for the new reset button */
+.modal-footer .modal-reset-button {
+    margin: 0 10px 0 0; /* Add some space to its right */
+    background-color: #007bff; /* Primary blue */
+    color: white; /* White text */
+    flex-shrink: 0;
+    /* Inherit padding, border-radius etc. from general button style if defined */
+    /* If not, uncomment and adjust these: */
+    /* padding: 8px 15px; */
+    /* border: none; */
+    /* border-radius: 4px; */
+    /* cursor: pointer; */
+    /* font-size: 0.9em; */
 }
 
-.modal input.input-decreased {
-    border-color: #dc3545; /* Red */
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+.modal-footer .modal-reset-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
 } 

@@ -10,6 +10,7 @@ import io.hulsbo.model.Ingredient;
 import io.hulsbo.model.Manager;
 
 import java.util.Map;
+import java.util.HashMap;
 
 @Path("/meals")
 @Produces(MediaType.APPLICATION_JSON)
@@ -101,17 +102,27 @@ public class MealResource {
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
-			boolean nutrientsModified = false;
+			// Create a map to hold nutrient updates
+			Map<String, Double> nutrientUpdates = new HashMap<>();
+			if (protein != null) { nutrientUpdates.put("protein", protein); }
+			if (fat != null) { nutrientUpdates.put("fat", fat); }
+			if (carbs != null) { nutrientUpdates.put("carbs", carbs); }
+			if (water != null) { nutrientUpdates.put("water", water); }
+			if (fiber != null) { nutrientUpdates.put("fiber", fiber); }
+			if (salt != null) { nutrientUpdates.put("salt", salt); }
+
+			boolean nutrientsModified = !nutrientUpdates.isEmpty();
 
 			try {
-				if (protein != null) { ingredient.setNutrientRatio("protein", protein); nutrientsModified = true; }
-				if (fat != null) { ingredient.setNutrientRatio("fat", fat); nutrientsModified = true; }
-				if (carbs != null) { ingredient.setNutrientRatio("carbs", carbs); nutrientsModified = true; }
-				if (water != null) { ingredient.setNutrientRatio("water", water); nutrientsModified = true; }
-				if (fiber != null) { ingredient.setNutrientRatio("fiber", fiber); nutrientsModified = true; }
-				if (salt != null) { ingredient.setNutrientRatio("salt", salt); nutrientsModified = true; }
+				// Apply nutrient updates in batch if any were provided
+				if (nutrientsModified) {
+					ingredient.setNutrientRatios(nutrientUpdates);
+				}
 			} catch (IllegalArgumentException e) {
-				Map<String, String> errorMap = Map.of("message", e.getMessage());
+				// Include current nutrient state in the error response
+				Map<String, Object> errorMap = new HashMap<>();
+				errorMap.put("message", e.getMessage());
+				errorMap.put("currentNutrients", ingredient.getNutrientsMap()); // Add current map
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
