@@ -41,6 +41,9 @@ const setDaysButton = document.getElementById('setDaysButton');
 const modalIngredientFeedback = document.getElementById('modalIngredientFeedback'); // Added feedback element
 const modalResetButton = document.getElementById('modalResetButton'); // Added reset button
 
+// Track mousedown target to prevent modal closing on drag
+let mouseDownTargetOnWindow = null;
+
 // Helper function to make API calls
 async function makeApiCall(url, method = 'GET', body = null) {
     try {
@@ -312,6 +315,7 @@ function openAddCrewModal() {
     document.getElementById('modalCrewStrategy').value = 'mifflin_st_jeor'; 
 
     if(addCrewModal) addCrewModal.style.display = 'block';
+    if (document.getElementById('modalCrewName')) document.getElementById('modalCrewName').focus(); // Focus Name field
 }
 
 function closeAddCrewModal() {
@@ -435,18 +439,33 @@ function clearModalFeedbackAndStyles() {
 
 // Close modal if user clicks outside of it
 window.onclick = function(event) {
-    if (event.target == addCrewModal) {
+    // Only close if mousedown and mouseup/click are both on the modal background
+    if (event.target == addCrewModal && mouseDownTargetOnWindow == addCrewModal) {
         closeAddCrewModal();
-    } else if (event.target == addMealModal) {
+    } else if (event.target == addMealModal && mouseDownTargetOnWindow == addMealModal) {
         closeAddMealModal();
-    } else if (event.target == addIngredientModal) {
+    } else if (event.target == addIngredientModal && mouseDownTargetOnWindow == addIngredientModal) {
         closeAddIngredientModal();
-    } else if (event.target == setDaysModal) {
+    } else if (event.target == setDaysModal && mouseDownTargetOnWindow == setDaysModal) {
         closeSetDaysModal();
-    } else if (event.target == modifyIngredientModal) { // Close Modify Ingredient modal
+    } else if (event.target == modifyIngredientModal && mouseDownTargetOnWindow == modifyIngredientModal) {
         closeModifyIngredientModal();
     }
 }
+
+// Listeners to track mousedown target and reset on mouseup
+window.addEventListener('mousedown', (event) => {
+    mouseDownTargetOnWindow = event.target;
+});
+
+window.addEventListener('mouseup', () => {
+    // Reset the target after the click/mouseup cycle is potentially processed by window.onclick
+    // Using a timeout allows the onclick handler to run first
+    setTimeout(() => {
+        mouseDownTargetOnWindow = null;
+    }, 0);
+});
+
 // --- End Modal Management ---
 
 // Crew Member Management
@@ -1227,6 +1246,29 @@ async function initializeDemo() {
             }
         });
     }
+
+    // Add Enter key listeners for Crew Member modal inputs
+    const crewModalInputs = [
+        document.getElementById('modalCrewName'),
+        document.getElementById('modalCrewAge'),
+        document.getElementById('modalCrewHeight'),
+        document.getElementById('modalCrewWeight'),
+        // Select elements don't usually trigger keypress for submit, but included for completeness if desired
+        // document.getElementById('modalCrewGender'), 
+        // document.getElementById('modalCrewActivity'), 
+        // document.getElementById('modalCrewStrategy')
+    ];
+
+    crewModalInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); 
+                    addCrewMember(); 
+                }
+            });
+        }
+    });
 }
 
 // Start the demo when the page loads
