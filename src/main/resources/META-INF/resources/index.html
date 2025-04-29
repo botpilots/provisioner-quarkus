@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provisioner - Adventurous Food Planning</title>
+    <link rel="stylesheet" href="demo/styles.css"> <!-- Link to the demo styles -->
+    <link rel="icon" href="/graphics/logo.svg" type="image/svg+xml">
+    <!-- Font Import (already in styles.css, but good practice to have here too) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Landing page specific styles */
+        body {
+            /* Ensure body flex properties are applied for footer positioning */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            /* Allow main content to grow and push footer down */
+            flex-grow: 1;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--bg-dark) url('https://via.placeholder.com/1600x600/4a4a4a/f0eee9?text=Inspiring+Adventure+Background') center center/cover no-repeat;
+            /* Replace with actual background image */
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .hero p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            background-color: var(--accent-primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .cta-button:hover {
+            background-color: #e08f50;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+            padding: 0 20px; /* Padding for container */
+        }
+        .feature-card {
+            background-color: var(--bg-medium);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        .feature-card img {
+            max-width: 100px;
+            height: auto;
+            margin-bottom: 20px;
+            filter: invert(85%) sepia(60%) saturate(490%) hue-rotate(340deg) brightness(95%) contrast(90%); /* Apply a filter to match the text-light color */
+        }
+        .feature-card h3 {
+            color: var(--accent-secondary);
+            margin-bottom: 15px;
+        }
+        .feature-card p {
+            color: var(--text-medium);
+            font-size: 0.95em;
+        }
+
+        .development-note {
+            background-color: var(--bg-medium);
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .development-note h2 {
+            color: var(--accent-primary);
+            border: none;
+            margin-bottom: 15px;
+        }
+        .development-note p {
+            max-width: 800px;
+            margin: 0 auto 25px auto;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/graphics/logo.svg" alt="Provisioner Logo">
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/index.html">Home</a></li>
+                    <li><a href="/demo/index.html">App Demo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Optimize Your Adventure Fuel</h1>
+            <p>Provisioner helps you meticulously plan your food for hiking, kayaking, bike touring, and any adventure. Take full control of your pack weight and nutritional needs to ensure you have the energy to explore further.</p>
+        </section>
+
+        <section id="features" class="container features">
+            <div class="feature-card">
+                <img src="/graphics/checklist.svg" alt="Planning Checklist Icon">
+                <h3>Detailed Trip Planning</h3>
+                <p>Define your adventure duration, crew size, activity levels, and energy requirements.</p>
+            </div>
+            <div class="feature-card">
+                <img src="/graphics/weight-up.svg" alt="Weight Optimization Icon">
+                <h3>Weight Optimization</h3>
+                <p>Track the weight of every meal and ingredient to minimize your load without sacrificing fuel.</p>
+            </div>
+            <div class="feature-card">
+                 <img src="/graphics/nutrition.svg" alt="Nutrition Control Icon">
+                <h3>Nutrition Control</h3>
+                <p>Manage macro-nutrient ratios (protein, fat, carbs) for meals and your entire trip to match your needs.</p>
+            </div>
+        </section>
+
+        <section id="feedback" class="development-note">
+            <h2>We're Just Getting Started!</h2>
+            <p>Provisioner is currently under active development. We're passionate about creating the ultimate food planning tool for adventurers and your feedback is invaluable. Sign up below to get notified about updates, new features, and be among the first to try the full version.</p>
+            <!-- Simple Placeholder Button -->
+            <a href="mailto:feedback@provisioner.example.com?subject=Provisioner Feedback/Interest" class="cta-button">Provide Feedback</a>
+            <!-- Replace with a real form/service later -->
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+             <p class="copyright">&copy; BotPilots AB</p>
+            <img src="/graphics/logo_sun.svg" alt="Provisioner Sun Logo" class="footer-logo">
+            <nav class="footer-nav">
+                 <ul>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
+
+</body>
+</html> 
