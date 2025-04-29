@@ -211,19 +211,19 @@ button:hover {
     display: flex;
     align-items: baseline;
     margin-bottom: 8px;
+    justify-content: space-between;
 }
 
 .label {
     font-weight: bold;
-    width: 150px;
     color: #666;
     text-align: left;
     padding-right: 10px;
 }
 
 .value {
-    flex: 1;
     color: #333;
+    text-align: right;
 }
 
 /* List Container Styles */
@@ -248,7 +248,11 @@ button:hover {
     flex-direction: column;
 }
 
-.crew-card:hover,
+/* Crew cards are not clickable */
+.crew-card {
+	cursor: default;
+}
+
 .meal-card:hover,
 .ingredient-card:hover {
     background-color: #f0f0f0;
@@ -343,7 +347,6 @@ button:hover {
 }
 
 /* Selected States */
-.crew-card.selected,
 .meal-card.selected,
 .ingredient-card.selected {
     background-color: #e0f7fa; /* Light blue selection */
