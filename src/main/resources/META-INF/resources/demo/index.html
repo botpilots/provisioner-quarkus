@@ -3,13 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provisioner API Demo</title>
+    <title>Provisioner - Adventurous Food Planning</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="/graphics/logo.svg" type="image/svg+xml">
 </head>
 <body>
-    <div class="container">
-        <h1>Provisioner API Demo</h1>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/graphics/logo.svg" alt="Provisioner Logo">
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/index.html">Home</a></li>
+                    <li><a href="/demo/index.html">App Demo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
+    <main class="container">
+		<h1>Create or select an adventure</h1>
         <!-- Top Section for Adventure Creation/Selection -->
         <div class="top-section">
             <!-- Create Adventure -->
@@ -173,7 +187,20 @@
                 <!-- This column is now empty -->
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p class="copyright">&copy; BotPilots AB</p>
+            <img src="/graphics/logo_sun.svg" alt="Provisioner Sun Logo" class="footer-logo">
+            <nav class="footer-nav">
+                 <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
 
     <!-- Add Crew Member Modal -->
     <div id="addCrewModal" class="modal">
