@@ -864,7 +864,7 @@ function updateAdventureDisplay() {
     // Update Adventure Basic Info
     document.getElementById('adventureNameDisplay').textContent = currentAdventure.name || '-';
     document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 0} days`;
-    document.getElementById('adventureCrewSize').textContent = `${currentAdventure.crewSize || 0} persons`;
+    document.getElementById('adventureCrewSize').textContent = `${currentAdventure.crewSize || 0} ${(currentAdventure.crewSize === 1) ? 'person' : 'persons'}`;
     document.getElementById('adventureCrewDailyKcalNeed').textContent = `${currentAdventure.crewDailyKcalNeed || 0} kCal / day`;
     document.getElementById('adventureWeight').textContent = `${(currentAdventure.weight || 0).toFixed(3)} kg`;
     document.getElementById('adventureEnergyDensity').textContent = `${currentAdventure.formattedEnergyDensity || '0.0'} kCal / kg`;
