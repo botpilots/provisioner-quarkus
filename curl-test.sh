@@ -78,7 +78,7 @@ run_test "Create a New Adventure" \
     "salt": 0.0
   },
   "childMap": {},
-  "childWeights": {},
+  "mealWeights": {},
   "weight": 0.0,
   "id": "id_[uuid]",
   "energyDensity": 0.0,
@@ -109,7 +109,7 @@ run_test "Add Crew Member" \
     "salt": 0.0
   },
   "childMap": {},
-  "childWeights": {},
+  "mealWeights": {},
   "weight": 0.0,
   "id": "id_[uuid]",
   "energyDensity": 0.0,
@@ -150,7 +150,7 @@ run_test "Set Number of Days" \
     "salt": 0.0
   },
   "childMap": {},
-  "childWeights": {},
+  "mealWeights": {},
   "weight": 0.0,
   "id": "id_[uuid]",
   "energyDensity": 0.0,
@@ -222,7 +222,7 @@ run_test "Get All Adventures" \
     "salt": 0.0
   },
   "childMap": {},
-  "childWeights": {},
+  "mealWeights": {},
   "weight": 0.0,
   "id": "id_[uuid]",
   "energyDensity": 0.0,

@@ -919,7 +919,7 @@ function updateAdventureDisplay() {
                             <img src="/graphics/icons/trash.svg" alt="Remove" class="icon-button">
                         </button>
                     </div>
-                    <p>Calc. Weight: ${(currentAdventure.childWeights && currentAdventure.childWeights[meal.id] !== undefined ? currentAdventure.childWeights[meal.id].toFixed(3) : '0.000')} kg</p>
+                    <p>Calc. Weight: ${(currentAdventure.mealWeights && currentAdventure.mealWeights[meal.id] !== undefined ? currentAdventure.mealWeights[meal.id].toFixed(3) : '0.000')} kg</p>
                     <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'} kCal / kg</p>
                     <p>Ratio: ${Math.round(mealData.ratio*100) || '0.0'} %</p>
                     <p>${(meal.allChildren && Array.isArray(meal.allChildren) ? meal.allChildren.length : 0)} ingredients</p>
@@ -959,9 +959,9 @@ function updateAdventureDisplay() {
         if (addIngredientButton) addIngredientButton.style.display = 'inline-block'; // Show Add Ingredient button
 
         document.getElementById('selectedMealName').textContent = meal.name || 'Unknown';
-        // Use the weight from the adventure's childWeights map
-        const calculatedMealWeight = (currentAdventure.childWeights && currentAdventure.childWeights[meal.id] !== undefined)
-            ? currentAdventure.childWeights[meal.id]
+        // Use the weight from the adventure's mealWeights map
+        const calculatedMealWeight = (currentAdventure.mealWeights && currentAdventure.mealWeights[meal.id] !== undefined)
+            ? currentAdventure.mealWeights[meal.id]
             : 0;
         document.getElementById('selectedMealWeight').textContent = `${calculatedMealWeight.toFixed(3)} kg`;
         document.getElementById('selectedMealEnergyDensity').textContent = `${meal.formattedEnergyDensity || '0.0'} kCal / kg`;

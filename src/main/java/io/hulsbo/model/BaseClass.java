@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public abstract class BaseClass {
     protected final NutrientsMap nutrientsMap = new NutrientsMap();
     protected final Map<SafeID, ChildWrapper> childMap = new LinkedHashMap<>();
-    protected final Map<SafeID, Double> childWeights = new LinkedHashMap<>(); // NOTE: This one uses not ChildMap keys.
     protected final Map<String, SafeID> nameIndex = new HashMap<>();
     protected final Set<SafeID> parents = new HashSet<>(); // Parent tracking
     protected double weight;
@@ -197,7 +196,6 @@ public abstract class BaseClass {
         newChild.addParent(this.getId());
         // NOTE: Registration in Manager is done in constructor.
         updateNameIndex();
-        setNutrientsMapAndWeights();
         this.updateAndPropagate(); // Trigger update
         return newChild.getId();
     }
@@ -346,26 +344,9 @@ public abstract class BaseClass {
         return childMap;
     }
 
-    // NOTE: Used in template.
+    // NOTE: Used in template
     public String getFormattedEnergyDensity() {
         return String.format(Locale.US, "%.1f", energyDensity);
-    }
-
-    // NOTE: Used in template
-    public Map<SafeID, Double> getChildWeights() {
-        return childWeights;
-    }
-
-    protected void setChildWeights() { // refer to setIngredientWeights() in Adventure.java for complete update.
-
-        childWeights.clear();
-
-        Set<SafeID> keys = childMap.keySet();
-        for (SafeID key : keys) {
-            // NOTE: To be consistent with ingredientWeights, we here use the id of the Meal object itself.
-            SafeID mealKey = childMap.get(key).getChild().getId();
-            childWeights.put(mealKey, weight*childMap.get(key).getRatio());
-        }
     }
 
     // Method to add parent ID
