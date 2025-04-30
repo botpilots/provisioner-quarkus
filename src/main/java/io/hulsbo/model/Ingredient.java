@@ -4,6 +4,8 @@ import java.security.SecureRandom;
 import java.util.Set;
 import io.hulsbo.util.model.SafeID;
 import java.util.Map;
+import io.quarkus.logging.Log;
+import io.hulsbo.util.model.baseclass.NutrientsMap;
 
 public class Ingredient extends BaseClass {
 
@@ -94,11 +96,16 @@ public class Ingredient extends BaseClass {
     // Override updateAndPropagate
     @Override
     public void updateAndPropagate() {
-        // 1. Perform Ingredient-specific recalculations *first* (if any)
-        // Currently none needed.
+        Log.infof("[Ingredient ID: %s] Entering updateAndPropagate.", getId());
+        // Ingredient-specific logic (like setEnergyDensity) happens first
+        this.setEnergyDensity();
+        super.updateAndPropagate(); // Propagate upwards
+        Log.infof("[Ingredient ID: %s] Exiting updateAndPropagate.", getId());
+    }
 
-        // 2. Then, call the base implementation to propagate upwards
-        super.updateAndPropagate();
+    public double getTotalWeight() {
+        // Implementation of getTotalWeight method
+        return 0.0; // Placeholder return, actual implementation needed
     }
 }
 

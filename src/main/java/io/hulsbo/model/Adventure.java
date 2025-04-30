@@ -251,14 +251,14 @@ public class Adventure extends BaseClass  {
 	// Override updateAndPropagate
 	@Override
 	public void updateAndPropagate() {
-		Log.info("Update and propagate run");
-		// 1. Perform Adventure-specific recalculations *first*
-		this.updateNameIndex(); // Ensure name index is up-to-date
-		// Note: setCrewDailyKcalNeed is implicitly called by put/remove crew member before this
-		// Note: setWeight is implicitly called by setNutrientsMapAndWeights
-		this.setNutrientsMapAndWeights(); // Updates energyDensity, mealWeights, ingredientWeights based on children
+		Log.infof("[Adventure ID: %s] Entering updateAndPropagate.", getId());
+		// Adventure-specific updates
+		this.setNutrientsMapAndWeights();
+		super.updateAndPropagate(); // Propagate upwards (though Adventure is usually the root)
+		Log.infof("[Adventure ID: %s] Exiting updateAndPropagate.", getId());
+	}
 
-		// 2. Then, call the base implementation to propagate upwards (if Adventures could be children)
-		super.updateAndPropagate();
+	public double getTotalWeight() {
+		return weight;
 	}
 }

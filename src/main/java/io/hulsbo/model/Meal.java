@@ -1,7 +1,9 @@
 package io.hulsbo.model;
 
+import io.hulsbo.util.model.baseclass.ChildWrapper;
 import java.util.Set;
 import io.hulsbo.util.model.SafeID;
+import io.quarkus.logging.Log;
 
 public class Meal extends BaseClass {
 
@@ -54,11 +56,14 @@ public SafeID putChild(Ingredient newIngredient) {
     // Override updateAndPropagate
     @Override
     public void updateAndPropagate() {
-        // 1. Perform Meal-specific recalculations *first*
-        this.updateNameIndex(); // Ensure name index is up-to-date
-        this.setNutrientsMapAndWeights(); // Recalculates based on ingredient children
+        Log.infof("[Meal ID: %s] Entering updateAndPropagate.", getId());
+        this.setNutrientsMapAndWeights(); // Meal-specific update
+        super.updateAndPropagate(); // Propagate upwards
+        Log.infof("[Meal ID: %s] Exiting updateAndPropagate.", getId());
+    }
 
-        // 2. Then, call the base implementation to propagate upwards
-        super.updateAndPropagate();
+    public double getTotalWeight() {
+        // Implementation of getTotalWeight method
+        return 0.0; // Placeholder return, actual implementation needed
     }
 }
