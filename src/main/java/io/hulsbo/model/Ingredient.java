@@ -6,9 +6,13 @@ import io.hulsbo.util.model.SafeID;
 import java.util.Map;
 import io.quarkus.logging.Log;
 import io.hulsbo.util.model.baseclass.NutrientsMap;
+import io.hulsbo.util.model.MeasurementUnit;
 
 public class Ingredient extends BaseClass {
 
+    private MeasurementUnit measurementUnit = MeasurementUnit.GRAM;
+    private Double pcsWeight; // Weight in grams of one piece
+    private Double density = 1.0; // g/ml, defaults to water
 
     public Ingredient() {
 
@@ -106,6 +110,35 @@ public class Ingredient extends BaseClass {
     public double getTotalWeight() {
         // Implementation of getTotalWeight method
         return 0.0; // Placeholder return, actual implementation needed
+    }
+
+    // --- Getters and Setters for new fields ---
+
+    public MeasurementUnit getMeasurementUnit() {
+        return measurementUnit;
+    }
+
+    public void setMeasurementUnit(MeasurementUnit measurementUnit) {
+        this.measurementUnit = measurementUnit;
+    }
+
+    public Double getPcsWeight() {
+        return pcsWeight;
+    }
+
+    public void setPcsWeight(Double pcsWeight) {
+        this.pcsWeight = pcsWeight;
+    }
+
+    public Double getDensity() {
+        return density;
+    }
+
+    public void setDensity(Double density) {
+        if (density != null && density <= 0) {
+            throw new IllegalArgumentException("Density must be greater than 0.");
+        }
+        this.density = density;
     }
 }
 

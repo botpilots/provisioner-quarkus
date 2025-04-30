@@ -3,7 +3,10 @@ package io.hulsbo;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Context;
 import io.hulsbo.util.model.SafeID;
+import io.hulsbo.util.model.MeasurementUnit;
 import io.hulsbo.model.BaseClass;
 import io.hulsbo.model.Meal;
 import io.hulsbo.model.Ingredient;
@@ -11,6 +14,7 @@ import io.hulsbo.model.Manager;
 import io.quarkus.logging.Log;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 
 @Path("/meals")
@@ -90,9 +94,17 @@ public class MealResource {
 			@QueryParam("carbs") Double carbs,
 			@QueryParam("water") Double water,
 			@QueryParam("fiber") Double fiber,
-			@QueryParam("salt") Double salt) {
-		Log.infof("PUT /meals/%s/ingredients/%s - Entering modifyIngredient (weight=%s, protein=%s, fat=%s, carbs=%s, water=%s, fiber=%s, salt=%s)",
-				mealId, ingredientId, weight, protein, fat, carbs, water, fiber, salt);
+			@QueryParam("salt") Double salt,
+			@Context UriInfo uriInfo) {
+
+		String measurementUnitStr = uriInfo.getQueryParameters().getFirst("measurementUnit");
+		List<String> pcsWeightValues = uriInfo.getQueryParameters().get("pcsWeight");
+		boolean pcsWeightParamPresent = pcsWeightValues != null && !pcsWeightValues.isEmpty();
+		String pcsWeightStr = pcsWeightParamPresent ? pcsWeightValues.get(0) : null;
+		String densityStr = uriInfo.getQueryParameters().getFirst("density");
+
+		Log.infof("PUT /meals/%s/ingredients/%s - Entering modifyIngredient (weight=%s, protein=%s, fat=%s, carbs=%s, water=%s, fiber=%s, salt=%s, measurementUnit=%s, pcsWeight=%s, density=%s)",
+				mealId, ingredientId, weight, protein, fat, carbs, water, fiber, salt, measurementUnitStr, pcsWeightStr, densityStr);
 		try {
 			Meal meal = (Meal) Manager.getBaseClass(mealId);
 			if (meal == null) {
@@ -121,7 +133,6 @@ public class MealResource {
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
-			// Create a map to hold nutrient updates
 			Map<String, Double> nutrientUpdates = new HashMap<>();
 			if (protein != null) { nutrientUpdates.put("protein", protein); }
 			if (fat != null) { nutrientUpdates.put("fat", fat); }
@@ -133,21 +144,79 @@ public class MealResource {
 			boolean nutrientsModified = !nutrientUpdates.isEmpty();
 			boolean weightModified = weight != null;
 
+			boolean measurementUnitModified = false;
+			boolean pcsWeightModified = false;
+			boolean densityModified = false;
+
+			if (measurementUnitStr != null && !measurementUnitStr.trim().isEmpty()) {
+				try {
+					MeasurementUnit unit = MeasurementUnit.valueOf(measurementUnitStr.toUpperCase());
+					if (ingredient.getMeasurementUnit() != unit) {
+						ingredient.setMeasurementUnit(unit);
+						measurementUnitModified = true;
+					}
+				} catch (IllegalArgumentException e) {
+					Map<String, String> errorMap = Map.of("message", "Invalid measurementUnit value: " + measurementUnitStr);
+					Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Invalid measurementUnit (%s)", mealId, ingredientId, measurementUnitStr);
+					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+				}
+			}
+
+			if (pcsWeightParamPresent) {
+				if (pcsWeightStr == null || pcsWeightStr.trim().isEmpty() || pcsWeightStr.equalsIgnoreCase("null")) {
+					if (ingredient.getPcsWeight() != null) {
+						ingredient.setPcsWeight(null);
+						pcsWeightModified = true;
+					}
+				} else {
+					try {
+						Double pcsWeightValue = Double.parseDouble(pcsWeightStr);
+						if (pcsWeightValue <= 0) {
+							Map<String, String> errorMap = Map.of("message", "pcsWeight must be greater than 0.");
+							Log.warnf("PUT /meals/%s/ingredients/%s - Failed: pcsWeight <= 0 (%s)", mealId, ingredientId, pcsWeightValue);
+							return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+						}
+						if (ingredient.getPcsWeight() == null || !ingredient.getPcsWeight().equals(pcsWeightValue)) {
+							ingredient.setPcsWeight(pcsWeightValue);
+							pcsWeightModified = true;
+						}
+					} catch (NumberFormatException e) {
+						Map<String, String> errorMap = Map.of("message", "Invalid number format for pcsWeight: " + pcsWeightStr);
+						Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Invalid pcsWeight format (%s)", mealId, ingredientId, pcsWeightStr);
+						return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+					}
+				}
+			}
+
+			if (densityStr != null && !densityStr.trim().isEmpty()) {
+				try {
+					Double densityValue = Double.parseDouble(densityStr);
+					if (densityValue <= 0) {
+						Map<String, String> errorMap = Map.of("message", "Density must be greater than 0.");
+						Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Density <= 0 (%s)", mealId, ingredientId, densityValue);
+						return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+					}
+					if (ingredient.getDensity() == null || !ingredient.getDensity().equals(densityValue)) {
+						ingredient.setDensity(densityValue);
+						densityModified = true;
+					}
+				} catch (NumberFormatException e) {
+					Map<String, String> errorMap = Map.of("message", "Invalid number format for density: " + densityStr);
+					Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Invalid density format (%s)", mealId, ingredientId, densityStr);
+					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+				}
+			}
+
 			try {
-				// Apply nutrient updates in batch if any were provided
 				if (nutrientsModified) {
 					ingredient.setNutrientRatios(nutrientUpdates);
 				}
 			} catch (IllegalArgumentException e) {
-				// Include current nutrient state in the error response
-				Map<String, Object> errorMap = new HashMap<>();
-				errorMap.put("message", e.getMessage());
-				errorMap.put("currentNutrients", ingredient.getNutrientsMap()); // Add current map
+				Map<String, String> errorMap = Map.of("message", e.getMessage());
 				Log.warnf("PUT /meals/%s/ingredients/%s - Failed setting nutrients: %s", mealId, ingredientId, e.getMessage());
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
-			// Apply weight update if provided
 			if (weightModified) {
 				if (weight < 0) {
 					Map<String, String> errorMap = Map.of("message", "Weight cannot be negative.");
@@ -155,7 +224,6 @@ public class MealResource {
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
 				try {
-					// This method now only updates ratios within the meal, no propagation
 					meal.modifyWeightOfIngredient(ingredientId, weight);
 				} catch (IllegalArgumentException e) {
 					Map<String, String> errorMap = Map.of("message", e.getMessage());
@@ -163,17 +231,18 @@ public class MealResource {
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
 			}
-			
-			// Single propagation trigger after all modifications
+
 			if (nutrientsModified) {
-				// If nutrients changed, normalize ingredient and propagate from there
 				ingredient.normalizeNutrientRatiosAndPropagate();
 			} else if (weightModified) {
-				// If only weight changed, propagate from the meal
 				meal.updateAndPropagate();
 			}
 
-			Log.infof("PUT /meals/%s/ingredients/%s - Success", mealId, ingredientId);
+			if (densityModified && !nutrientsModified && !weightModified) {
+				ingredient.updateAndPropagate();
+			}
+
+			Log.infof("PUT /meals/%s/ingredients/%s - Success (unit: %s, pcsW: %s, density: %s)", mealId, ingredientId, ingredient.getMeasurementUnit(), ingredient.getPcsWeight(), ingredient.getDensity());
 			return Response.ok(ingredient).build();
 		} catch (Exception e) {
 			Log.errorf(e, "PUT /meals/%s/ingredients/%s - Unexpected server error: %s", mealId, ingredientId, e.getMessage());
@@ -192,7 +261,7 @@ public class MealResource {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 
-		meal.getInfo(); // Assuming this logs to console itself
+		meal.getInfo();
 		Log.infof("GET /meals/%s/info - Success (info printed to console)", id);
 		return Response.ok("Meal info printed to console").build();
 	}
