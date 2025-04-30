@@ -715,7 +715,7 @@ async function updateIngredient() {
             protein: ((updatedNutrients.protein || 0) * 100).toFixed(1),
             fat:     ((updatedNutrients.fat || 0) * 100).toFixed(1),
             carbs:   ((updatedNutrients.carbs || 0) * 100).toFixed(1),
-            water:   ((updatedNutrients.water || 100) * 100).toFixed(1), // Use backend value for water display
+            water:   ((updatedNutrients.water || 0) * 100).toFixed(1), // Use backend value for water display, fallback to 0
             fiber:   ((updatedNutrients.fiber || 0) * 100).toFixed(1),
             salt:    ((updatedNutrients.salt || 0) * 100).toFixed(1)
         };
