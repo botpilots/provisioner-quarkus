@@ -112,6 +112,7 @@ public class MealResource {
 			if (salt != null) { nutrientUpdates.put("salt", salt); }
 
 			boolean nutrientsModified = !nutrientUpdates.isEmpty();
+			boolean weightModified = weight != null;
 
 			try {
 				// Apply nutrient updates in batch if any were provided
@@ -126,21 +127,28 @@ public class MealResource {
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
-			if (nutrientsModified) {
-				ingredient.normalizeNutrientRatiosAndPropagate();
-			}
-
-			if (weight != null) {
+			// Apply weight update if provided
+			if (weightModified) {
 				if (weight < 0) {
 					Map<String, String> errorMap = Map.of("message", "Weight cannot be negative.");
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
 				try {
+					// This method now only updates ratios within the meal, no propagation
 					meal.modifyWeightOfIngredient(ingredientId, weight);
 				} catch (IllegalArgumentException e) {
 					Map<String, String> errorMap = Map.of("message", e.getMessage());
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
+			}
+			
+			// Single propagation trigger after all modifications
+			if (nutrientsModified) {
+				// If nutrients changed, normalize ingredient and propagate from there
+				ingredient.normalizeNutrientRatiosAndPropagate();
+			} else if (weightModified) {
+				// If only weight changed, propagate from the meal
+				meal.updateAndPropagate();
 			}
 
 			return Response.ok(ingredient).build();

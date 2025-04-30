@@ -49,14 +49,11 @@ public SafeID putChild(Ingredient newIngredient) {
             double weightedValue = childMap.get(key).getRecipeWeight() / totalAbsWeight;
             modifyRatio(key, weightedValue);
         }
-
-        // Trigger update propagation
-        this.updateAndPropagate();
     }
 
     // Override updateAndPropagate
     @Override
-    protected void updateAndPropagate() {
+    public void updateAndPropagate() {
         // 1. Perform Meal-specific recalculations *first*
         this.updateNameIndex(); // Ensure name index is up-to-date
         this.setNutrientsMapAndWeights(); // Recalculates based on ingredient children

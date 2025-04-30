@@ -93,7 +93,7 @@ public class Ingredient extends BaseClass {
 
     // Override updateAndPropagate
     @Override
-    protected void updateAndPropagate() {
+    public void updateAndPropagate() {
         // 1. Perform Ingredient-specific recalculations *first* (if any)
         // Currently none needed.
 

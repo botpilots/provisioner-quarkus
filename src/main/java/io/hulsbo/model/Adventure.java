@@ -250,7 +250,7 @@ public class Adventure extends BaseClass  {
 
 	// Override updateAndPropagate
 	@Override
-	protected void updateAndPropagate() {
+	public void updateAndPropagate() {
 		Log.info("Update and propagate run");
 		// 1. Perform Adventure-specific recalculations *first*
 		this.updateNameIndex(); // Ensure name index is up-to-date

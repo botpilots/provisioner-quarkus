@@ -216,8 +216,6 @@ public abstract class BaseClass {
         }
         ChildWrapper childWrapper = childMap.get(key);
         childWrapper.setRatio(newWeightedValue);
-        setNutrientsMapAndWeights();
-        this.updateAndPropagate(); // Trigger update
     }
 
     /**
@@ -381,7 +379,8 @@ public abstract class BaseClass {
     }
 
     // Base update and propagation method
-    protected void updateAndPropagate() {
+    // Made public so Resource classes can trigger it after batch updates
+    public void updateAndPropagate() {
         // Base implementation ONLY handles notification propagation upwards
         for (SafeID parentId : parents) {
             BaseClass parent = Manager.getBaseClass(parentId);
