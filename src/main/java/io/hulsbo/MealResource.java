@@ -8,6 +8,7 @@ import io.hulsbo.model.BaseClass;
 import io.hulsbo.model.Meal;
 import io.hulsbo.model.Ingredient;
 import io.hulsbo.model.Manager;
+import io.quarkus.logging.Log;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -19,32 +20,40 @@ public class MealResource {
 
 	@POST
 	public Response createMeal(@QueryParam("name") String name) {
+		Log.infof("POST /meals?name=%s - Entering createMeal", name);
 		Meal meal = new Meal();
 		meal.setName(name);
+		Log.infof("POST /meals?name=%s - Success creating Meal ID: %s", name, meal.getId());
 		return Response.ok(meal).build();
 	}
 
 	@GET
 	@Path("/{id}")
 	public Response getMeal(@PathParam("id") SafeID id) {
+		Log.infof("GET /meals/%s - Entering getMeal", id);
 		Meal meal = (Meal) Manager.getBaseClass(id);
 		if (meal == null) {
+			Log.warnf("GET /meals/%s - Failed: Meal not found.", id);
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
+		Log.infof("GET /meals/%s - Success", id);
 		return Response.ok(meal).build();
 	}
 
 	@POST
 	@Path("/{id}/ingredients")
 	public Response addIngredient(@PathParam("id") SafeID mealId, @QueryParam("name") String name) {
+		Log.infof("POST /meals/%s/ingredients?name=%s - Entering addIngredient", mealId, name);
 		Meal meal = (Meal) Manager.getBaseClass(mealId);
 		if (meal == null) {
+			Log.warnf("POST /meals/%s/ingredients - Failed: Meal not found.", mealId);
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 
 		Ingredient ingredient = new Ingredient();
 		ingredient.setName(name);
 		SafeID ingredientId = meal.putChild(ingredient);
+		Log.infof("POST /meals/%s/ingredients - Success adding Ingredient ID: %s", mealId, ingredientId);
 		return Response.ok(ingredientId).build();
 	}
 
@@ -53,15 +62,19 @@ public class MealResource {
 	public Response removeIngredient(
 			@PathParam("mealId") SafeID mealId,
 			@PathParam("ingredientId") SafeID ingredientId) {
+		Log.infof("DELETE /meals/%s/ingredients/%s - Entering removeIngredient", mealId, ingredientId);
 		Meal meal = (Meal) Manager.getBaseClass(mealId);
 		if (meal == null) {
+			Log.warnf("DELETE /meals/%s/ingredients/%s - Failed: Meal not found.", mealId, ingredientId);
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 
 		try {
 			meal.removeChild(ingredientId);
+			Log.infof("DELETE /meals/%s/ingredients/%s - Success", mealId, ingredientId);
 			return Response.ok().build();
 		} catch (IllegalArgumentException e) {
+			Log.warnf("DELETE /meals/%s/ingredients/%s - Failed: %s", mealId, ingredientId, e.getMessage());
 			return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
 		}
 	}
@@ -78,27 +91,33 @@ public class MealResource {
 			@QueryParam("water") Double water,
 			@QueryParam("fiber") Double fiber,
 			@QueryParam("salt") Double salt) {
+		Log.infof("PUT /meals/%s/ingredients/%s - Entering modifyIngredient (weight=%s, protein=%s, fat=%s, carbs=%s, water=%s, fiber=%s, salt=%s)",
+				mealId, ingredientId, weight, protein, fat, carbs, water, fiber, salt);
 		try {
 			Meal meal = (Meal) Manager.getBaseClass(mealId);
 			if (meal == null) {
 				Map<String, String> errorMap = Map.of("message", "Meal not found.");
+				Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Meal not found.", mealId, ingredientId);
 				return Response.status(Response.Status.NOT_FOUND).entity(errorMap).build();
 			}
 
 			BaseClass baseIngredient = Manager.getBaseClass(ingredientId);
 			if (baseIngredient == null) {
 				Map<String, String> errorMap = Map.of("message", "Ingredient not found.");
+				Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Ingredient not found.", mealId, ingredientId);
 				return Response.status(Response.Status.NOT_FOUND).entity(errorMap).build();
 			}
 
 			if (!(baseIngredient instanceof Ingredient)) {
 				Map<String, String> errorMap = Map.of("message", "Provided ID does not belong to an Ingredient.");
+				Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Provided ID is not an Ingredient.", mealId, ingredientId);
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 			Ingredient ingredient = (Ingredient) baseIngredient;
 
 			if (meal.getChildMap().values().stream().noneMatch(cw -> cw.getChild().getId().equals(ingredientId))) {
 				Map<String, String> errorMap = Map.of("message", "Ingredient does not belong to the specified meal.");
+				Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Ingredient does not belong to meal.", mealId, ingredientId);
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
@@ -112,6 +131,7 @@ public class MealResource {
 			if (salt != null) { nutrientUpdates.put("salt", salt); }
 
 			boolean nutrientsModified = !nutrientUpdates.isEmpty();
+			boolean weightModified = weight != null;
 
 			try {
 				// Apply nutrient updates in batch if any were provided
@@ -123,28 +143,40 @@ public class MealResource {
 				Map<String, Object> errorMap = new HashMap<>();
 				errorMap.put("message", e.getMessage());
 				errorMap.put("currentNutrients", ingredient.getNutrientsMap()); // Add current map
+				Log.warnf("PUT /meals/%s/ingredients/%s - Failed setting nutrients: %s", mealId, ingredientId, e.getMessage());
 				return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 			}
 
-			if (nutrientsModified) {
-				ingredient.normalizeNutrientRatiosAndPropagate();
-			}
-
-			if (weight != null) {
+			// Apply weight update if provided
+			if (weightModified) {
 				if (weight < 0) {
 					Map<String, String> errorMap = Map.of("message", "Weight cannot be negative.");
+					Log.warnf("PUT /meals/%s/ingredients/%s - Failed: Negative weight provided (%s).", mealId, ingredientId, weight);
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
 				try {
+					// This method now only updates ratios within the meal, no propagation
 					meal.modifyWeightOfIngredient(ingredientId, weight);
 				} catch (IllegalArgumentException e) {
 					Map<String, String> errorMap = Map.of("message", e.getMessage());
+					Log.warnf("PUT /meals/%s/ingredients/%s - Failed modifying weight: %s", mealId, ingredientId, e.getMessage());
 					return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
 				}
 			}
+			
+			// Single propagation trigger after all modifications
+			if (nutrientsModified) {
+				// If nutrients changed, normalize ingredient and propagate from there
+				ingredient.normalizeNutrientRatiosAndPropagate();
+			} else if (weightModified) {
+				// If only weight changed, propagate from the meal
+				meal.updateAndPropagate();
+			}
 
+			Log.infof("PUT /meals/%s/ingredients/%s - Success", mealId, ingredientId);
 			return Response.ok(ingredient).build();
 		} catch (Exception e) {
+			Log.errorf(e, "PUT /meals/%s/ingredients/%s - Unexpected server error: %s", mealId, ingredientId, e.getMessage());
 			Map<String, String> errorMap = Map.of("message", "An unexpected server error occurred: " + e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorMap).build();
 		}
@@ -153,12 +185,15 @@ public class MealResource {
 	@GET
 	@Path("/{id}/info")
 	public Response getMealInfo(@PathParam("id") SafeID id) {
+		Log.infof("GET /meals/%s/info - Entering getMealInfo", id);
 		Meal meal = (Meal) Manager.getBaseClass(id);
 		if (meal == null) {
+			Log.warnf("GET /meals/%s/info - Failed: Meal not found.", id);
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 
-		meal.getInfo();
+		meal.getInfo(); // Assuming this logs to console itself
+		Log.infof("GET /meals/%s/info - Success (info printed to console)", id);
 		return Response.ok("Meal info printed to console").build();
 	}
 }

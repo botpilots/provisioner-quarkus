@@ -15,7 +15,7 @@ Thank you for the correction and the clear specification. Let me summarize your 
     *   Calculate `Total Food Provisions Weight = (Total Crew Kcal Need * Days) / Adventure Energy Density`.
 
 3.  **Calculate Total Water Contained Within Food:**
-    *   Distribute the `Total Food Provisions Weight` down to determine the calculated total weight of each *meal* needed for the adventure (`adventure.childWeights`).
+    *   Distribute the `Total Food Provisions Weight` down to determine the calculated total weight of each *meal* needed for the adventure (`adventure.mealWeights`).
     *   For each meal, calculate the total weight of water it contains:
         *   Sum the weight of *inherent* water from its ingredients (based on each ingredient's `nutrientsMap['water']` ratio and its calculated weight within the meal).
         *   Add the weight of *explicitly added recipe water* (if water is an ingredient in the meal recipe, calculate its weight based on its recipe ratio and the total calculated meal weight).

@@ -54,8 +54,8 @@ This abstract class is the foundation for `Adventure`, `Meal`, and `Ingredient`.
 *   **Calculations:**
     *   `nutrientsMap` and `energyDensity` are calculated based on the weighted average of its child `Meal`s' nutrients and their defined *ratios* (`ChildWrapper.ratio`).
     *   `weight`: Total calculated weight of food needed for the adventure (`crewDailyKcalNeed * days / energyDensity`).
-    *   `childWeights`: A `Map<SafeID, Double>` storing the calculated *total weight* needed for each specific `Meal` based on the overall Adventure `weight` and the `Meal`'s ratio.
-    *   `ingredientWeights`: A `Map<SafeID, Double>` storing the calculated *total weight* needed for each specific `Ingredient` across all meals, derived from the `childWeights` of the meals they belong to and the ingredient's ratio within that meal.
+    *   `mealWeights`: A `Map<SafeID, Double>` storing the calculated *total weight* needed for each specific `Meal` based on the overall Adventure `weight` and the `Meal`'s ratio.
+    *   `ingredientWeights`: A `Map<SafeID, Double>` storing the calculated *total weight* needed for each specific `Ingredient` across all meals, derived from the `mealWeights` of the meals they belong to and the ingredient's ratio within that meal.
     *   Crew Kcal needs are calculated based on individual `CrewMember` attributes (age, height, weight, gender, activity level) using selectable strategies (Harris-Benedict, Mifflin-St Jeor).
 
 ### 5. Crew Member (`CrewMember.java`)
@@ -70,7 +70,7 @@ A key aspect is how changes in lower-level objects (like an `Ingredient`'s prope
 
 **Why Propagation is Needed:**
 
-If an `Ingredient`'s nutritional data changes, or the weight of an `Ingredient` in a `Meal` is modified, the `Meal`'s overall `nutrientsMap`, `energyDensity`, and potentially its ratio within an `Adventure` need recalculation. Subsequently, the `Adventure`'s `nutrientsMap`, `energyDensity`, total `weight`, and the calculated weights (`childWeights`, `ingredientWeights`) must also be updated.
+If an `Ingredient`'s nutritional data changes, or the weight of an `Ingredient` in a `Meal` is modified, the `Meal`'s overall `nutrientsMap`, `energyDensity`, and potentially its ratio within an `Adventure` need recalculation. Subsequently, the `Adventure`'s `nutrientsMap`, `energyDensity`, total `weight`, and the calculated weights (`mealWeights`, `ingredientWeights`) must also be updated.
 
 **How Propagation Works (`updateAndPropagate`):**
 
@@ -110,7 +110,7 @@ This mechanism ensures that the data displayed or used for calculations at the `
 *   `days: int`
 *   `ingredientWeights: Map<SafeID, Double>` (Calculated total weight per ingredient for the adventure)
 *   *(Inherited)* `childMap: Map<SafeID, ChildWrapper>` (Contains Meals; `ChildWrapper.ratio` defines Meal proportion)
-*   *(Inherited)* `childWeights: Map<SafeID, Double>` (Calculated total weight per meal for the adventure)
+*   *(Inherited)* `mealWeights: Map<SafeID, Double>` (Calculated total weight per meal for the adventure)
 *   *(Inherited)* `weight: double` (Total calculated food weight)
 *   *(Inherited)* `energyDensity: double`
 *   *(Inherited)* `nutrientsMap: NutrientsMap`
@@ -125,7 +125,7 @@ This mechanism ensures that the data displayed or used for calculations at the `
 *   *(Inherited)* `nutrientsMap: NutrientsMap`
 *   *(Inherited)* `parents: Set<SafeID>`
 *   *(Inherited)* `id: SafeID`, `name: String`, `creationTime: OffsetDateTime`, `nameIndex: Map<String, SafeID>`
-*   *(Inherited)* `childWeights: Map<SafeID, Double>` (Likely unused/zero for Meal)
+*   *(Inherited)* `mealWeights: Map<SafeID, Double>` (Likely unused/zero for Meal)
 
 ### `Ingredient extends BaseClass`
 
@@ -136,7 +136,7 @@ This mechanism ensures that the data displayed or used for calculations at the `
 *   *(Inherited)* `childMap: Map<SafeID, ChildWrapper>` (Should be empty for Ingredient)
 *   *(Inherited)* `nameIndex: Map<String, SafeID>` (Should be empty for Ingredient)
 *   *(Inherited)* `weight: double` (Likely unused/zero for Ingredient)
-*   *(Inherited)* `childWeights: Map<SafeID, Double>` (Should be empty for Ingredient)
+*   *(Inherited)* `mealWeights: Map<SafeID, Double>` (Should be empty for Ingredient)
 
 ### `CrewMember` (Not a BaseClass)
 

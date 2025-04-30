@@ -103,7 +103,8 @@ public class NutrientsMap extends AbstractMap<String, Double> {
         for (Map.Entry<String, Double> entry : nutrientsMap.entrySet()) {
             double oldValue = entry.getValue();
             double newValue = oldValue * scaleFactor;
-            nutrientsMap.put(entry.getKey(), newValue);
+            // Use internalPut to bypass intermediate sum checks during normalization
+            this.internalPut(entry.getKey(), newValue);
         }
     }
 

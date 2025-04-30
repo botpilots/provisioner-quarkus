@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public abstract class BaseClass {
     protected final NutrientsMap nutrientsMap = new NutrientsMap();
     protected final Map<SafeID, ChildWrapper> childMap = new LinkedHashMap<>();
-    protected final Map<SafeID, Double> childWeights = new LinkedHashMap<>(); // NOTE: This one uses not ChildMap keys.
     protected final Map<String, SafeID> nameIndex = new HashMap<>();
     protected final Set<SafeID> parents = new HashSet<>(); // Parent tracking
     protected double weight;
@@ -197,7 +196,6 @@ public abstract class BaseClass {
         newChild.addParent(this.getId());
         // NOTE: Registration in Manager is done in constructor.
         updateNameIndex();
-        setNutrientsMapAndWeights();
         this.updateAndPropagate(); // Trigger update
         return newChild.getId();
     }
@@ -216,8 +214,6 @@ public abstract class BaseClass {
         }
         ChildWrapper childWrapper = childMap.get(key);
         childWrapper.setRatio(newWeightedValue);
-        setNutrientsMapAndWeights();
-        this.updateAndPropagate(); // Trigger update
     }
 
     /**
@@ -348,26 +344,9 @@ public abstract class BaseClass {
         return childMap;
     }
 
-    // NOTE: Used in template.
+    // NOTE: Used in template
     public String getFormattedEnergyDensity() {
         return String.format(Locale.US, "%.1f", energyDensity);
-    }
-
-    // NOTE: Used in template
-    public Map<SafeID, Double> getChildWeights() {
-        return childWeights;
-    }
-
-    protected void setChildWeights() { // refer to setIngredientWeights() in Adventure.java for complete update.
-
-        childWeights.clear();
-
-        Set<SafeID> keys = childMap.keySet();
-        for (SafeID key : keys) {
-            // NOTE: To be consistent with ingredientWeights, we here use the id of the Meal object itself.
-            SafeID mealKey = childMap.get(key).getChild().getId();
-            childWeights.put(mealKey, weight*childMap.get(key).getRatio());
-        }
     }
 
     // Method to add parent ID
@@ -381,18 +360,27 @@ public abstract class BaseClass {
     }
 
     // Base update and propagation method
-    protected void updateAndPropagate() {
-        // Base implementation ONLY handles notification propagation upwards
+    // Made public so Resource classes can trigger it after batch updates
+    public void updateAndPropagate() {
+        Log.infof("[%s ID: %s] Entering updateAndPropagate.", getClass().getSimpleName(), getId());
+
+        // Specific update logic should be implemented in subclasses BEFORE this call
+        Log.infof("[%s ID: %s] Propagating update upwards to %d parent(s).", getClass().getSimpleName(), getId(), parents.size());
         for (SafeID parentId : parents) {
             BaseClass parent = Manager.getBaseClass(parentId);
             if (parent != null) {
+                Log.infof("[%s ID: %s] --> Calling updateAndPropagate on parent [%s ID: %s].",
+                          getClass().getSimpleName(), getId(), parent.getClass().getSimpleName(), parentId);
                 parent.updateAndPropagate(); // Recursive call to the parent's version
             } else {
-                // Optional: Log a warning if a parent ID exists but the object isn't in the Manager
-                Log.warn("Parent with ID " + parentId + " not found in Manager during update propagation from child " + this.getId());
-                // Consider removing the invalid parentId here if appropriate - requires parents to be non-final or a different removal mechanism
+                Log.warnf("[%s ID: %s] Found null parent reference during propagation for parent ID: %s",
+                          getClass().getSimpleName(), getId(), parentId);
+                // Optionally remove the null parent reference here if desired
+                // this.parents.remove(parentId); // Be careful with concurrent modification if iterating directly
             }
         }
+        Log.infof("[%s ID: %s] Exiting updateAndPropagate.", getClass().getSimpleName(), getId());
     }
 
+    public abstract double getTotalWeight();
 }

@@ -24,7 +24,7 @@ All API endpoints are relative to the base URL of the application (default: http
     "salt": 0.0
   },
   "childMap": {},
-  "childWeights": {},
+  "mealWeights": {},
   "weight": 0.0,
   "id": "id_[uuid]",
   "energyDensity": 0.0,

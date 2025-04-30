@@ -15,6 +15,7 @@ public class Adventure extends BaseClass  {
 	private double crewDailyKcalNeed;
 	private int days;
 	private final Map<SafeID, Double> ingredientWeights = new LinkedHashMap<>();
+	private final Map<SafeID, Double> mealWeights = new LinkedHashMap<>();
 
 	public Adventure() {
 
@@ -34,32 +35,33 @@ public class Adventure extends BaseClass  {
 
 	public void setMealAndIngredientWeights() {
 
-		Log.info("setMealAndIngredientWeights run");
+		Log.info("(Re)calculating meal and ingredient weights for adventure \"" + getName() + "\" with id " + getId());
 
 		ingredientWeights.clear();
 
-		setChildWeights(); // Ingredient weights depends on an updated childWeights field.
+		setMealWeights(); // Ingredient weights depends on an updated mealWeights field.
 
-		Set<SafeID> mealKeys = childWeights.keySet();
+		Set<SafeID> mealKeys = mealWeights.keySet();
+
+		Log.info("Starting to set ingredient weights for " + mealKeys.size() + " meal(s)");
+		
+		if (mealKeys.isEmpty()) {
+			Log.info("Zero meals to process - skipping ingredient weight calculation");
+			return;
+		}
 
 		for (SafeID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in
 											// ingredientWeights.
 
-			Log.info("Meal");
-
+			Log.info("Processing meal \"" + childMap.get(mealKey).getChild().getName() + "\" with id: " + mealKey + " having " + childMap.get(mealKey).getChild().childMap.size() + " ingredients");
 			Map<SafeID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
 
 			Set<SafeID> ingredientKeys = mealIngredients.keySet();
 
 			for (SafeID ingredientKey : ingredientKeys) {
-				Log.info("Ingredient");
-				Log.info("key: " + ingredientKey);
-				Log.info("mealweight: " + childWeights.get(mealKey));
-				Log.info("ratio ingred: " + mealIngredients.get(ingredientKey).getRatio());
-				// NOTE: Since there's no direct connection to this object and the ingredient,
-				// we use the id of the ingredient itself.
+
 				ingredientWeights.put(ingredientKey,
-						childWeights.get(mealKey) * mealIngredients.get(ingredientKey).getRatio());
+						mealWeights.get(mealKey) * mealIngredients.get(ingredientKey).getRatio());
 
 			if (!ingredientWeights.containsKey(ingredientKey)) {
 				throw new IllegalArgumentException("Ingredient weight with key " + ingredientKey + " could not be added to ingredientWeights.");
@@ -68,6 +70,7 @@ public class Adventure extends BaseClass  {
 			}
 			}
 		}
+		Log.info("Finished setting ingredient weights for " + mealKeys.size() + " meal(s)");
 	}
 
 	public void setNutrientsMapAndWeights() {
@@ -153,7 +156,7 @@ public class Adventure extends BaseClass  {
 				System.out.printf(" | %s: %4.1f %%", nutrient,
 						childMap.get(key).getChild().getNutrientsMap().get(nutrient) * 100);
 			}
-			System.out.printf(" | calc. weight: " + "%4.2f kg", childWeights.get(childMap.get(key).getChild().getId()));
+			System.out.printf(" | calc. weight: " + "%4.2f kg", mealWeights.get(childMap.get(key).getChild().getId()));
 			System.out.println();
 			System.out.println();
 			// For adventures, also sum each ingredient for each meal
@@ -250,15 +253,29 @@ public class Adventure extends BaseClass  {
 
 	// Override updateAndPropagate
 	@Override
-	protected void updateAndPropagate() {
-		Log.info("Update and propagate run");
-		// 1. Perform Adventure-specific recalculations *first*
-		this.updateNameIndex(); // Ensure name index is up-to-date
-		// Note: setCrewDailyKcalNeed is implicitly called by put/remove crew member before this
-		// Note: setWeight is implicitly called by setNutrientsMapAndWeights
-		this.setNutrientsMapAndWeights(); // Updates energyDensity, mealWeights, ingredientWeights based on children
+	public void updateAndPropagate() {
+		Log.infof("[Adventure ID: %s] Entering updateAndPropagate.", getId());
+		// Adventure-specific updates
+		this.setNutrientsMapAndWeights();
+		super.updateAndPropagate(); // Propagate upwards (though Adventure is usually the root)
+		Log.infof("[Adventure ID: %s] Exiting updateAndPropagate.", getId());
+	}
 
-		// 2. Then, call the base implementation to propagate upwards (if Adventures could be children)
-		super.updateAndPropagate();
+	public double getTotalWeight() {
+		return weight;
+	}
+
+	protected void setMealWeights() {
+		mealWeights.clear();
+		Set<SafeID> keys = childMap.keySet();
+		for (SafeID key : keys) {
+			SafeID mealKey = childMap.get(key).getChild().getId();
+			mealWeights.put(mealKey, weight*childMap.get(key).getRatio());
+		}
+	}
+
+	// NOTE: Used in template.
+	public Map<SafeID, Double> getMealWeights() {
+		return mealWeights;
 	}
 }
