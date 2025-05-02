@@ -3,7 +3,7 @@ package io.hulsbo;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.hulsbo.model.BaseClass;
 import io.hulsbo.model.Meal;
 import io.hulsbo.model.Ingredient;
@@ -29,7 +29,7 @@ public class MealResource {
 
 	@GET
 	@Path("/{id}")
-	public Response getMeal(@PathParam("id") SafeID id) {
+	public Response getMeal(@PathParam("id") UUID id) {
 		Log.infof("GET /meals/%s - Entering getMeal", id);
 		Meal meal = (Meal) Manager.getBaseClass(id);
 		if (meal == null) {
@@ -42,7 +42,7 @@ public class MealResource {
 
 	@POST
 	@Path("/{id}/ingredients")
-	public Response addIngredient(@PathParam("id") SafeID mealId, @QueryParam("name") String name) {
+	public Response addIngredient(@PathParam("id") UUID mealId, @QueryParam("name") String name) {
 		Log.infof("POST /meals/%s/ingredients?name=%s - Entering addIngredient", mealId, name);
 		Meal meal = (Meal) Manager.getBaseClass(mealId);
 		if (meal == null) {
@@ -52,7 +52,7 @@ public class MealResource {
 
 		Ingredient ingredient = new Ingredient();
 		ingredient.setName(name);
-		SafeID ingredientId = meal.putChild(ingredient);
+		UUID ingredientId = meal.putChild(ingredient);
 		Log.infof("POST /meals/%s/ingredients - Success adding Ingredient ID: %s", mealId, ingredientId);
 		return Response.ok(ingredientId).build();
 	}
@@ -60,8 +60,8 @@ public class MealResource {
 	@DELETE
 	@Path("/{mealId}/ingredients/{ingredientId}")
 	public Response removeIngredient(
-			@PathParam("mealId") SafeID mealId,
-			@PathParam("ingredientId") SafeID ingredientId) {
+			@PathParam("mealId") UUID mealId,
+			@PathParam("ingredientId") UUID ingredientId) {
 		Log.infof("DELETE /meals/%s/ingredients/%s - Entering removeIngredient", mealId, ingredientId);
 		Meal meal = (Meal) Manager.getBaseClass(mealId);
 		if (meal == null) {
@@ -82,8 +82,8 @@ public class MealResource {
 	@PUT
 	@Path("/{mealId}/ingredients/{ingredientId}")
 	public Response modifyIngredient(
-			@PathParam("mealId") SafeID mealId,
-			@PathParam("ingredientId") SafeID ingredientId,
+			@PathParam("mealId") UUID mealId,
+			@PathParam("ingredientId") UUID ingredientId,
 			@QueryParam("weight") Double weight,
 			@QueryParam("protein") Double protein,
 			@QueryParam("fat") Double fat,
@@ -184,7 +184,7 @@ public class MealResource {
 
 	@GET
 	@Path("/{id}/info")
-	public Response getMealInfo(@PathParam("id") SafeID id) {
+	public Response getMealInfo(@PathParam("id") UUID id) {
 		Log.infof("GET /meals/%s/info - Entering getMealInfo", id);
 		Meal meal = (Meal) Manager.getBaseClass(id);
 		if (meal == null) {

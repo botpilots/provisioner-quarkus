@@ -13,7 +13,7 @@ public class CustomJacksonProvider implements ContextResolver<ObjectMapper> {
 
 	public CustomJacksonProvider() {
 		objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new SafeIDModule());
+		objectMapper.registerModule(new UUIDModule());
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

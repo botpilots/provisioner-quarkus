@@ -3,7 +3,7 @@ package io.hulsbo.model;
 import io.hulsbo.util.model.CrewMember.Gender;
 import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.KCalCalculationStrategy;
 import io.hulsbo.util.model.CrewMember.PhysicalActivity;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
 import io.quarkus.logging.Log;
 
@@ -11,11 +11,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Adventure extends BaseClass  {
-	private final Map<SafeID, CrewMember> crewMemberMap = new LinkedHashMap<>();
+	private final Map<UUID, CrewMember> crewMemberMap = new LinkedHashMap<>();
 	private double crewDailyKcalNeed;
 	private int days;
-	private final Map<SafeID, Double> ingredientWeights = new LinkedHashMap<>();
-	private final Map<SafeID, Double> mealWeights = new LinkedHashMap<>();
+	private final Map<UUID, Double> ingredientWeights = new LinkedHashMap<>();
+	private final Map<UUID, Double> mealWeights = new LinkedHashMap<>();
 
 	public Adventure() {
 
@@ -41,7 +41,7 @@ public class Adventure extends BaseClass  {
 
 		setMealWeights(); // Ingredient weights depends on an updated mealWeights field.
 
-		Set<SafeID> mealKeys = mealWeights.keySet();
+		Set<UUID> mealKeys = mealWeights.keySet();
 
 		Log.info("Starting to set ingredient weights for " + mealKeys.size() + " meal(s)");
 		
@@ -50,15 +50,15 @@ public class Adventure extends BaseClass  {
 			return;
 		}
 
-		for (SafeID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in
+		for (UUID mealKey : mealKeys) { // For each meal, calculate its child ingredients weights and save in
 											// ingredientWeights.
 
 			Log.info("Processing meal \"" + childMap.get(mealKey).getChild().getName() + "\" with id: " + mealKey + " having " + childMap.get(mealKey).getChild().childMap.size() + " ingredients");
-			Map<SafeID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
+			Map<UUID, ChildWrapper> mealIngredients = childMap.get(mealKey).getChild().childMap;
 
-			Set<SafeID> ingredientKeys = mealIngredients.keySet();
+			Set<UUID> ingredientKeys = mealIngredients.keySet();
 
-			for (SafeID ingredientKey : ingredientKeys) {
+			for (UUID ingredientKey : ingredientKeys) {
 
 				ingredientWeights.put(ingredientKey,
 						mealWeights.get(mealKey) * mealIngredients.get(ingredientKey).getRatio());
@@ -82,9 +82,9 @@ public class Adventure extends BaseClass  {
 	/**
 	 * Add a new meal to meals hashmap and the ratios hashmap using the same key.
 	 *
-	 * @return SafeID key of newChild
+	 * @return UUID key of newChild
 	 */
-	public SafeID putChild(Meal newMeal) {
+	public UUID putChild(Meal newMeal) {
 		double weightedValue = giveSpaceForAnotherEntry();
 		return super.putChild(newMeal, weightedValue, 0.0);
 	}
@@ -160,7 +160,7 @@ public class Adventure extends BaseClass  {
 			System.out.println();
 			System.out.println();
 			// For adventures, also sum each ingredient for each meal
-			Map<SafeID, ChildWrapper> childMapIngredient = value.getChild().childMap;
+			Map<UUID, ChildWrapper> childMapIngredient = value.getChild().childMap;
 			childMapIngredient.forEach((childMapIngredientKey, childMapIngredientValue) -> {
 				System.out.printf("%15s |", childMapIngredientValue.getChild().getName());
 				System.out.printf(" ratio: " + "%5.1f %%",
@@ -182,10 +182,10 @@ public class Adventure extends BaseClass  {
 		// Summary
 		System.out.printf("%10s |", getClass().getSimpleName());
 
-		Set<SafeID> children = childMap.keySet();
+		Set<UUID> children = childMap.keySet();
 		double sum = 0;
 
-		for (SafeID id : children) {
+		for (UUID id : children) {
 			sum += childMap.get(id).getRatio();
 		}
 
@@ -235,11 +235,11 @@ public class Adventure extends BaseClass  {
 	}
 
 	// NOTE: Used in template.
-	public Map<SafeID, Double> getIngredientWeights() {
+	public Map<UUID, Double> getIngredientWeights() {
 		return ingredientWeights;
 	}
 
-	public void removeCrewMember(SafeID id) {
+	public void removeCrewMember(UUID id) {
 		crewMemberMap.remove(id);
 		if (crewMemberMap.containsKey(id)) {
 			throw new IllegalArgumentException("Crew member with id " + id + " could not be removed from adventure.");
@@ -267,15 +267,15 @@ public class Adventure extends BaseClass  {
 
 	protected void setMealWeights() {
 		mealWeights.clear();
-		Set<SafeID> keys = childMap.keySet();
-		for (SafeID key : keys) {
-			SafeID mealKey = childMap.get(key).getChild().getId();
+		Set<UUID> keys = childMap.keySet();
+		for (UUID key : keys) {
+			UUID mealKey = childMap.get(key).getChild().getId();
 			mealWeights.put(mealKey, weight*childMap.get(key).getRatio());
 		}
 	}
 
 	// NOTE: Used in template.
-	public Map<SafeID, Double> getMealWeights() {
+	public Map<UUID, Double> getMealWeights() {
 		return mealWeights;
 	}
 }

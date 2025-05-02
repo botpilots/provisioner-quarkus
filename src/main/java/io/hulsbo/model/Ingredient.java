@@ -2,7 +2,7 @@ package io.hulsbo.model;
 
 import java.security.SecureRandom;
 import java.util.Set;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import java.util.Map;
 import io.quarkus.logging.Log;
 import io.hulsbo.util.model.baseclass.NutrientsMap;
@@ -13,7 +13,7 @@ public class Ingredient extends BaseClass {
     public Ingredient() {
 
 		// Not sure this is needed, an ingredient should not have any children.
-        for (SafeID key : childMap.keySet()) {
+        for (UUID key : childMap.keySet()) {
             nutrientsMap.put(childMap.get(key).getChild().getName(), childMap.get(key).getRatio());
         }
     }

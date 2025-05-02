@@ -1,6 +1,6 @@
 package io.hulsbo.model;
 
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
 import io.hulsbo.util.model.baseclass.NutrientsMap;
 import io.quarkus.logging.Log;
@@ -12,18 +12,18 @@ import java.util.stream.Collectors;
 
 public abstract class BaseClass {
     protected final NutrientsMap nutrientsMap = new NutrientsMap();
-    protected final Map<SafeID, ChildWrapper> childMap = new LinkedHashMap<>();
-    protected final Map<String, SafeID> nameIndex = new HashMap<>();
-    protected final Set<SafeID> parents = new HashSet<>(); // Parent tracking
+    protected final Map<UUID, ChildWrapper> childMap = new LinkedHashMap<>();
+    protected final Map<String, UUID> nameIndex = new HashMap<>();
+    protected final Set<UUID> parents = new HashSet<>(); // Parent tracking
     protected double weight;
-    private final SafeID id;
+    private final UUID id;
     protected double energyDensity;
     private String name;
     protected final OffsetDateTime creationTime;
 
     public BaseClass() {
         this.creationTime = OffsetDateTime.now(ZoneOffset.ofHours(2));
-        SafeID id = SafeID.randomSafeID();
+        UUID id = UUID.randomUUID();
         this.id = id;
         this.name = "Unnamed " + getClass().getSimpleName();
         Manager.register(id, this);
@@ -40,7 +40,7 @@ public abstract class BaseClass {
         this.updateAndPropagate();
     }
 
-    public SafeID getId() {
+    public UUID getId() {
         return this.id;
     }
 
@@ -85,7 +85,7 @@ public abstract class BaseClass {
         }
 
         // Add all weighted nutrients of the baseclass to this baseclass' nutrientMap
-        for (SafeID key : childMap.keySet()) {
+        for (UUID key : childMap.keySet()) {
             double ratio = childMap.get(key).getRatio();
             BaseClass baseClass = childMap.get(key).getChild();
             NutrientsMap baseClassNutrients = baseClass.getNutrientsMap();
@@ -111,7 +111,7 @@ public abstract class BaseClass {
         double sumNewValue = 0.0;
 
         if (!childMap.isEmpty()) {
-            for (SafeID key : childMap.keySet()) {
+            for (UUID key : childMap.keySet()) {
                 double oldValue = childMap.get(key).getRatio();
                 double newValue = oldValue * oldEntriesAllowedSpace;
                 sumNewValue += newValue;
@@ -127,7 +127,7 @@ public abstract class BaseClass {
      */
     protected void scaleEntriesOnRemoval(double weightedValue) {
         double scaleFactor = 1 / (1 - weightedValue);
-        for (SafeID key : childMap.keySet()) {
+        for (UUID key : childMap.keySet()) {
             double value = childMap.get(key).getRatio();
             childMap.get(key).setRatio(value * scaleFactor);
         }
@@ -155,10 +155,10 @@ public abstract class BaseClass {
 
         System.out.println();
         System.out.printf("%10s |", getClass().getSimpleName());
-        Set<SafeID> children = childMap.keySet();
+        Set<UUID> children = childMap.keySet();
         double sum = 0;
 
-        for (SafeID id : children) {
+        for (UUID id : children) {
             sum += childMap.get(id).getRatio();
         }
 
@@ -166,7 +166,7 @@ public abstract class BaseClass {
 
         if (getClass() != Adventure.class) {
             sum = 0;
-            for (SafeID id : children) {
+            for (UUID id : children) {
                 sum += childMap.get(id).getRecipeWeight();
             }
             System.out.printf(" | weight: " + "%5.1f g", sum);
@@ -188,9 +188,9 @@ public abstract class BaseClass {
      * @param newChild         The new child to add.
      * @param newWeightedValue The weighted value of the child.
      * @param absWeight        The absolute weight of the child.
-     * @return SafeID key of newChild
+     * @return UUID key of newChild
      */
-    protected SafeID putChild(BaseClass newChild, Double newWeightedValue, Double absWeight) {
+    protected UUID putChild(BaseClass newChild, Double newWeightedValue, Double absWeight) {
         ChildWrapper newChildWrapper = new ChildWrapper(newChild, newWeightedValue, absWeight);
         childMap.put(newChild.getId(), newChildWrapper);
         newChild.addParent(this.getId());
@@ -208,7 +208,7 @@ public abstract class BaseClass {
      * @param newWeightedValue The new weighted value.
      * @throws IllegalArgumentException if the key is not present in childMap.
      */
-    protected void modifyRatio(SafeID key, Double newWeightedValue) {
+    protected void modifyRatio(UUID key, Double newWeightedValue) {
         if (!childMap.containsKey(key)) {
             throw new IllegalArgumentException("Child with key not present in childMap.");
         }
@@ -224,7 +224,7 @@ public abstract class BaseClass {
      * @param newRecipeWeight The new weighted value.
      * @throws IllegalArgumentException if the key is not present in childMap.
      */
-    protected void modifyRecipeWeight(SafeID key, Double newRecipeWeight) {
+    protected void modifyRecipeWeight(UUID key, Double newRecipeWeight) {
         if (!childMap.containsKey(key)) {
             throw new IllegalArgumentException("Child with key not present in childMap.");
         }
@@ -242,7 +242,7 @@ public abstract class BaseClass {
      * @param newChild The new child object.
      * @throws IllegalArgumentException if the key is not present in childrenMap.
      */
-    protected void modifyChild(SafeID key, BaseClass newChild) {
+    protected void modifyChild(UUID key, BaseClass newChild) {
         if (!childMap.containsKey(key)) {
             throw new IllegalArgumentException("Child with key not present in childMap.");
         }
@@ -267,7 +267,7 @@ public abstract class BaseClass {
      * @param name Name of the child to remove.
      */
     public String removeChild(String name) {
-        SafeID key = nameIndex.get(name);
+        UUID key = nameIndex.get(name);
         if (key == null) {
             throw new NullPointerException("No child with that name.");
         } else {
@@ -281,7 +281,7 @@ public abstract class BaseClass {
      * @param key Key of the child to remove.
      * @return String as recipe for successful removal. Throws error if removal was unsuccessful.
      */
-    public String removeChild(SafeID key) {
+    public String removeChild(UUID key) {
         // Unregister parent before removal
         ChildWrapper removedWrapper = childMap.get(key);
         if (removedWrapper != null) {
@@ -312,7 +312,7 @@ public abstract class BaseClass {
      */
     protected void updateNameIndex() {
         nameIndex.clear();
-        for (SafeID key : childMap.keySet()) {
+        for (UUID key : childMap.keySet()) {
             nameIndex.put(childMap.get(key).getChild().getName(), key);
         }
     }
@@ -340,7 +340,7 @@ public abstract class BaseClass {
     }
 
     // NOTE: Used in template.
-    public Map<SafeID, ChildWrapper> getChildMap() {
+    public Map<UUID, ChildWrapper> getChildMap() {
         return childMap;
     }
 
@@ -350,12 +350,12 @@ public abstract class BaseClass {
     }
 
     // Method to add parent ID
-    public void addParent(SafeID parentId) {
+    public void addParent(UUID parentId) {
         this.parents.add(parentId);
     }
 
     // Method to remove parent ID
-    public void removeParent(SafeID parentId) {
+    public void removeParent(UUID parentId) {
         this.parents.remove(parentId);
     }
 
@@ -366,7 +366,7 @@ public abstract class BaseClass {
 
         // Specific update logic should be implemented in subclasses BEFORE this call
         Log.infof("[%s ID: %s] Propagating update upwards to %d parent(s).", getClass().getSimpleName(), getId(), parents.size());
-        for (SafeID parentId : parents) {
+        for (UUID parentId : parents) {
             BaseClass parent = Manager.getBaseClass(parentId);
             if (parent != null) {
                 Log.infof("[%s ID: %s] --> Calling updateAndPropagate on parent [%s ID: %s].",

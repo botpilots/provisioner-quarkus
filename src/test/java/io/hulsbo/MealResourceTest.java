@@ -2,7 +2,7 @@ package io.hulsbo;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.hulsbo.model.Meal;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -22,8 +22,8 @@ public class MealResourceTest {
 
 	private static String mealId;
 	private static String ingredientId;
-	private SafeID testMealId;
-	private SafeID testIngredientId;
+	private UUID testMealId;
+	private UUID testIngredientId;
 	private static final double TOLERANCE = 1e-6; // Tolerance for float comparisons in assertions
 
 	@BeforeEach
@@ -82,7 +82,7 @@ public class MealResourceTest {
 	@Order(3)
 	public void testGetMealNotFound() {
 		// Use a non-existent ID
-		String nonExistentId = SafeID.randomSafeID().toString();
+		String nonExistentId = UUID.randomUUID().toString();
 
 		given()
 				.contentType(ContentType.JSON)
@@ -314,7 +314,7 @@ public class MealResourceTest {
 
 	@Test
 	public void testModifyIngredientInvalidMealId() {
-		SafeID invalidMealId = SafeID.randomSafeID();
+		UUID invalidMealId = UUID.randomUUID();
 		given()
 			.queryParam("weight", 100.0)
 		.when()
@@ -326,7 +326,7 @@ public class MealResourceTest {
 	
 	@Test
 	public void testModifyIngredientInvalidIngredientId() {
-		SafeID invalidIngredientId = SafeID.randomSafeID();
+		UUID invalidIngredientId = UUID.randomUUID();
 		given()
 			.queryParam("weight", 100.0)
 		.when()
@@ -341,11 +341,11 @@ public class MealResourceTest {
 		 // Create another meal and ingredient
 		 Meal otherMeal = new Meal();
 		 otherMeal.setName("Other Meal");
-		 SafeID otherMealId = otherMeal.getId();
+		 UUID otherMealId = otherMeal.getId();
 
 		 io.hulsbo.model.Ingredient otherIngredient = new io.hulsbo.model.Ingredient();
 		 otherIngredient.setName("Other Ingredient");
-		 SafeID otherIngredientId = otherMeal.putChild(otherIngredient);
+		 UUID otherIngredientId = otherMeal.putChild(otherIngredient);
 		
 		 // Try to modify otherIngredient using testMealId
 		given()

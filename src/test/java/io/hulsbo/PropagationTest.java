@@ -40,7 +40,7 @@ public class PropagationTest {
     static String mealId;
     static String ingredientId1;
     static String ingredientId2;
-    // Crew member ID handling might need refinement later as they are not BaseClass objects directly managed by SafeID in Manager
+    // Crew member ID handling might need refinement later as they are not BaseClass objects directly managed by UUID in Manager
     // static String crewMemberId; 
 
 
@@ -62,7 +62,7 @@ public class PropagationTest {
           .extract().path("id");
 
         System.out.println("Created Adventure ID: " + adventureId);
-        assert adventureId != null && adventureId.startsWith("id_");
+        assert adventureId != null;
     }
 
     @Test
@@ -83,7 +83,7 @@ public class PropagationTest {
           .extract().path("id");
 
         System.out.println("Created Meal ID: " + mealId);
-        assert mealId != null && mealId.startsWith("id_");
+        assert mealId != null;
     }
 
     @Test
@@ -104,7 +104,6 @@ public class PropagationTest {
           .statusCode(200)
           .contentType(ContentType.JSON)
           // Expect the body to be a JSON string matching the pattern
-          .body(is(startsWith("\"id_"))) // Check for quoted string starting with id_
           .body(is(endsWith("\"")))     // Check for ending quote
           .extract().body().asString(); // Extract the plain ID string
 
@@ -114,7 +113,7 @@ public class PropagationTest {
         mealId = addedMealId.substring(1, addedMealId.length() - 1);
 
         System.out.println("Meal Added To Adventure ID: " + mealId);
-        assert mealId != null && mealId.startsWith("id_");
+        assert mealId != null;
     }
 
     @Test
@@ -133,7 +132,6 @@ public class PropagationTest {
         .then()
           .statusCode(200)
           .contentType(ContentType.JSON)
-          .body(is(startsWith("\"id_"))) // Expecting quoted JSON string ID
           .body(is(endsWith("\"")))
           .extract().body().asString();
 
@@ -141,7 +139,7 @@ public class PropagationTest {
         ingredientId1 = ingredientId1.substring(1, ingredientId1.length() - 1);
 
         System.out.println("Added Ingredient A ID: " + ingredientId1);
-        assert ingredientId1 != null && ingredientId1.startsWith("id_");
+        assert ingredientId1 != null;
     }
     
     @Test
@@ -160,7 +158,6 @@ public class PropagationTest {
         .then()
           .statusCode(200)
           .contentType(ContentType.JSON)
-          .body(is(startsWith("\"id_"))) 
           .body(is(endsWith("\"")))
           .extract().body().asString();
 
@@ -168,7 +165,7 @@ public class PropagationTest {
         ingredientId2 = ingredientId2.substring(1, ingredientId2.length() - 1);
 
         System.out.println("Added Ingredient B ID: " + ingredientId2);
-        assert ingredientId2 != null && ingredientId2.startsWith("id_");
+        assert ingredientId2 != null;
     }
 
     @Test

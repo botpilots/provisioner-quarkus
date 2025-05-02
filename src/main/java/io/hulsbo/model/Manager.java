@@ -1,7 +1,7 @@
 package io.hulsbo.model;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
 
 import java.lang.reflect.InaccessibleObjectException;
@@ -9,20 +9,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Manager {
-    static final Map<SafeID, BaseClass> baseClassIndex = new HashMap<>();
-    static final Map<SafeID, CrewMember> crewMemberIndex = new HashMap<>();
+    static final Map<UUID, BaseClass> baseClassIndex = new HashMap<>();
+    static final Map<UUID, CrewMember> crewMemberIndex = new HashMap<>();
 
-    static void register(SafeID id, BaseClass baseClass) {
+    static void register(UUID id, BaseClass baseClass) {
         baseClassIndex.put(id, baseClass);
     }
-    static void register(SafeID id, CrewMember crewMember) {
+    static void register(UUID id, CrewMember crewMember) {
         crewMemberIndex.put(id, crewMember);
     }
-    public static Set<BaseClass> findParents(SafeID id) {
-        Set<SafeID> keys = baseClassIndex.keySet();
+    public static Set<BaseClass> findParents(UUID id) {
+        Set<UUID> keys = baseClassIndex.keySet();
         Set<BaseClass> parents = new HashSet<>();
 
-        for (SafeID key : keys) {
+        for (UUID key : keys) {
             ChildWrapper elementOwnChild = baseClassIndex.get(key).childMap.get(id);
 
             if (elementOwnChild != null) {
@@ -34,16 +34,16 @@ public class Manager {
 
 
 //    TODO: Add parameter stating what Class is expected, or make getter for each one.
-    public static BaseClass getBaseClass(SafeID id) {
+    public static BaseClass getBaseClass(UUID id) {
         return baseClassIndex.get(id);
     }
 
-    public static CrewMember getCrewMember(SafeID id) {
+    public static CrewMember getCrewMember(UUID id) {
         return crewMemberIndex.get(id);
     }
 
 
-    public static String removeBaseClassObject(SafeID id) {
+    public static String removeBaseClassObject(UUID id) {
 
         BaseClass baseClass = baseClassIndex.remove(id);
 
@@ -54,7 +54,7 @@ public class Manager {
         }
     }
 
-    static String removeCrewMember(SafeID id) {
+    static String removeCrewMember(UUID id) {
 
 
         CrewMember crewMember = crewMemberIndex.remove(id);

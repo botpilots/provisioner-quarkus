@@ -8,13 +8,13 @@ import io.hulsbo.util.model.CrewMember.KCalCalculationStrategies.MifflinStJeor;
 import io.hulsbo.util.model.CrewMember.PhysicalActivity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 public class CrewMember {
-    private final SafeID safeId;
+    private final UUID uuid;
     private final String name;
     private final int age;
     private final int height;
@@ -31,7 +31,7 @@ public class CrewMember {
 
     public CrewMember(String name, int age, int height, int weight, String gender, String activity, String strategy) {
 
-        SafeID id = SafeID.randomSafeID();
+        UUID id = UUID.randomUUID();
 
         KCalCalculationStrategy someStrategy = switch (strategy.toLowerCase()) {
             case "harris_benedict_original" -> new HarrisBenedictOriginal();
@@ -40,7 +40,7 @@ public class CrewMember {
             default -> throw new IllegalArgumentException("Unknown strategy: " + strategy);
         };
         this.creationTime = OffsetDateTime.now(ZoneOffset.ofHours(2));
-        this.safeId = id;
+        this.uuid = id;
         this.name = name;
         this.age = age;
         this.height = height;
@@ -80,8 +80,8 @@ public class CrewMember {
         return height;
     }
 
-    public SafeID getId() {
-        return safeId;
+    public UUID getId() {
+        return uuid;
     }
 
     public OffsetDateTime getCreationTime() {

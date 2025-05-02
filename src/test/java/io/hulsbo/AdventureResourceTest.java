@@ -1,7 +1,7 @@
 package io.hulsbo;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ public class AdventureResourceTest {
 	@Order(4)
 	public void testGetAdventureNotFound() {
 		// Use a non-existent ID
-		String nonExistentId = SafeID.randomSafeID().toString();
+		String nonExistentId = UUID.randomUUID().toString();
 
 		given()
 				.contentType(ContentType.JSON)
