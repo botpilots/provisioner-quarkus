@@ -1,7 +1,6 @@
 package io.hulsbo;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.hulsbo.model.Adventure;
 import io.hulsbo.util.model.SafeID;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertTrue;
