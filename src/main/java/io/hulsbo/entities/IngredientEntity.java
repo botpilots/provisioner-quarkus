@@ -19,19 +19,22 @@ public class IngredientEntity extends PanacheEntityBase {
     public String name;
 
     @Column(name = "fat_ratio", nullable = false) // Match the column name from your test
-    public BigDecimal fatRatio;
+    public BigDecimal fat_ratio;
 
     @Column(name = "protein_ratio", nullable = false)
-    public BigDecimal proteinRatio;
+    public BigDecimal protein_ratio;
 
     @Column(name = "carbs_ratio", nullable = false)
-    public BigDecimal carbsRatio;
+    public BigDecimal carbs_ratio;
 
     @Column(name = "fiber_ratio", nullable = false)
-    public BigDecimal fiberRatio;
+    public BigDecimal fiber_ratio;
 
     @Column(name = "salt_ratio", nullable = false)
-    public BigDecimal saltRatio;
+    public BigDecimal salt_ratio;
+
+    @Column(name = "density_g_ml", nullable = false)
+    public BigDecimal density_g_ml;
 
     // Panache provides basic finders, persist, etc.
     // You can add custom finders here if needed, e.g.:
@@ -43,12 +46,12 @@ public class IngredientEntity extends PanacheEntityBase {
     public IngredientEntity() {}
 
     // Optional: Convenience constructor
-    public IngredientEntity(String name, BigDecimal fatRatio, BigDecimal proteinRatio, BigDecimal carbsRatio, BigDecimal fiberRatio, BigDecimal saltRatio) {
+    public IngredientEntity(String name, BigDecimal fat_ratio, BigDecimal protein_ratio, BigDecimal carbs_ratio, BigDecimal fiber_ratio, BigDecimal salt_ratio) {
         this.name = name;
-        this.fatRatio = fatRatio;
-        this.proteinRatio = proteinRatio;
-        this.carbsRatio = carbsRatio;
-        this.fiberRatio = fiberRatio;
-        this.saltRatio = saltRatio;
+        this.fat_ratio = fat_ratio;
+        this.protein_ratio = protein_ratio;
+        this.carbs_ratio = carbs_ratio;
+        this.fiber_ratio = fiber_ratio;
+        this.salt_ratio = salt_ratio;
     }
 } 

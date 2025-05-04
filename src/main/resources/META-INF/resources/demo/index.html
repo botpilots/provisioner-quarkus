@@ -270,15 +270,42 @@
     </div>
 
     <!-- Add Ingredient Modal -->
-    <div id="addIngredientModal" class="modal modal-small">
+    <div id="addIngredientModal" class="modal modal-large">
         <div class="modal-content">
             <span class="close-button" onclick="closeAddIngredientModal()">&times;</span>
-            <h3>Add New Ingredient</h3>
-             <div class="modal-input-row">
-                 <label for="modalIngredientName" class="sr-only">Ingredient Name:</label>
-                 <input type="text" id="modalIngredientName" placeholder="Enter name and press Enter...">
-                 <button onclick="addIngredient()">Add</button>
+            <h3>Add Ingredient to Meal</h3>
+
+            <!-- Section 1: Add New -->
+            <div class="modal-section">
+                <h4>Create New Ingredient</h4>
+                <div class="modal-input-row">
+                    <label for="modalIngredientName" class="sr-only">New Ingredient Name:</label>
+                    <input type="text" id="modalIngredientName" placeholder="Enter name for NEW ingredient...">
+                    <button id="addNewIngredientButton" onclick="addIngredient()">Add New</button>
+                </div>
             </div>
+
+            <!-- Separator -->
+            <hr class="modal-separator">
+
+            <!-- Section 2: Load Existing -->
+            <div class="modal-section">
+                <h4>Load Existing Ingredient</h4>
+                <div class="modal-input-row">
+                    <label for="modalIngredientSearch" class="sr-only">Search Existing:</label>
+                    <input type="text" id="modalIngredientSearch" placeholder="Search by name...">
+                    <button id="searchExistingIngredientButton" onclick="searchExistingIngredients()">Search</button>
+                </div>
+                <div id="ingredientSearchResults" class="list-container modal-search-results">
+                    <!-- Search results will be populated here -->
+                    <p class="placeholder-text">Search results will appear here.</p>
+                </div>
+                <div class="modal-footer-load">
+                     <p id="modalExistingIngredientFeedback" class="modal-feedback small-feedback" aria-live="polite"></p>
+                     <button id="loadSelectedIngredientButton" onclick="loadSelectedIngredient()" disabled>Load Selected</button>
+                </div>
+            </div>
+
         </div>
     </div>
 

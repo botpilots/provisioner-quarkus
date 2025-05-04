@@ -41,20 +41,38 @@ public class MealResource {
 	}
 
 	@POST
-	@Path("/{id}/ingredients")
-	public Response addIngredient(@PathParam("id") UUID mealId, @QueryParam("name") String name) {
-		Log.infof("POST /meals/%s/ingredients?name=%s - Entering addIngredient", mealId, name);
+	@Path("/{id}/ingredient")
+	public Response addIngredient(@PathParam("id") UUID mealId, @QueryParam("name") String name, @QueryParam("ingredientId") UUID ingredientId) {
+		Log.infof("POST /meals/%s/ingredient - Entering addIngredient with name=%s and id=%s", mealId, name, ingredientId);
+		if (ingredientId != null && name != null) {
+			Map<String, String> errorMap = Map.of("message", "Only one of 'id' or 'name' query parameter must be provided.");
+			Log.errorf("POST /meals/%s/ingredient - Failed: %s", mealId, errorMap.get("message"));
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+		}
+		if (ingredientId == null && name == null) {
+			Map<String, String> errorMap = Map.of("message", "Either 'id' (for an existing ingredient) or 'name' (for a new ingredient) query parameter must be provided and non-empty.");
+			Log.errorf("POST /meals/%s/ingredient - Failed: %s", mealId, errorMap.get("message"));
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorMap).build();
+		}
 		Meal meal = (Meal) Manager.getBaseClass(mealId);
 		if (meal == null) {
-			Log.warnf("POST /meals/%s/ingredients - Failed: Meal not found.", mealId);
-			return Response.status(Response.Status.NOT_FOUND).build();
+			Map<String, String> errorMap = Map.of("message", "Meal with ID: \"" + mealId + "\" not found.");
+			Log.errorf("POST /meals/%s/ingredient - Failed: %s", mealId, errorMap.get("message"));
+			return Response.status(Response.Status.NOT_FOUND).entity(errorMap).build();
 		}
 
-		Ingredient ingredient = new Ingredient();
-		ingredient.setName(name);
-		UUID ingredientId = meal.putChild(ingredient);
-		Log.infof("POST /meals/%s/ingredients - Success adding Ingredient ID: %s", mealId, ingredientId);
-		return Response.ok(ingredientId).build();
+		if (ingredientId != null) {
+			Ingredient ingredient = (Ingredient) Manager.getBaseClass(ingredientId);
+			ingredientId = meal.putChild(ingredient);
+			Log.infof("POST /meals/%s/ingredients - Success adding existing Ingredient with ID: %s", mealId, ingredientId);
+			return Response.ok(ingredientId).build();
+		} else {
+			Ingredient ingredient = new Ingredient();
+			ingredient.setName(name);
+			ingredientId = meal.putChild(ingredient);
+			Log.infof("POST /meals/%s/ingredients - Success adding Ingredient ID: %s", mealId, ingredientId);
+			return Response.ok(ingredientId).build();
+		}
 	}
 
 	@DELETE

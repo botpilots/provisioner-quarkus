@@ -10,6 +10,7 @@ let ingredientToModify = null; // Temp store for ingredient being modified
 let lastAdventureData = null;  // Store last fetched adventure data for comparison
 let previousIngredientModalState = {}; // Store previous values for comparison
 let lastValidNutrientsOnError = null; // Added reset button
+let selectedExistingIngredientId = null; // Store ID of ingredient selected from search
 
 // DOM elements
 const adventuresList = document.getElementById('adventures-list');
@@ -40,6 +41,14 @@ const addIngredientButton = document.getElementById('addIngredientButton');
 const setDaysButton = document.getElementById('setDaysButton'); 
 const modalIngredientFeedback = document.getElementById('modalIngredientFeedback'); // Added feedback element
 const modalResetButton = document.getElementById('modalResetButton'); // Added reset button
+
+// New DOM elements for Add Ingredient Modal Search
+const modalIngredientSearchInput = document.getElementById('modalIngredientSearch');
+const searchExistingIngredientButton = document.getElementById('searchExistingIngredientButton');
+const ingredientSearchResultsDiv = document.getElementById('ingredientSearchResults');
+const loadSelectedIngredientButton = document.getElementById('loadSelectedIngredientButton');
+const modalExistingIngredientFeedback = document.getElementById('modalExistingIngredientFeedback');
+const addNewIngredientButton = document.getElementById('addNewIngredientButton'); // Reference to the Add New button
 
 // Track mousedown target to prevent modal closing on drag
 let mouseDownTargetOnWindow = null;
@@ -281,9 +290,12 @@ function updateAdventureDropdown() {
 // --- Modal Management ---
 
 // NEW Helper function to calculate and update water percentage in the modal
-function calculateAndUpdateWaterPercentage() {
-    if (!modifyIngredientModal || modifyIngredientModal.style.display !== 'block') {
-        return; // Only calculate if the modal is visible
+function calculateAndUpdateWaterPercentage(force = false) {
+	console.log('calculateAndUpdateWaterPercentage');
+	// If the modal is not visible, don't calculate unless force is true
+    if ((!modifyIngredientModal || modifyIngredientModal.style.display !== 'block') && !force) {
+		console.log('modal not visible and function not forced');
+        return; // Only calculate if the modal is visible    }
     }
     const protein = parseFloat(modalIngredientProteinInput.value) || 0;
     const fat = parseFloat(modalIngredientFatInput.value) || 0;
@@ -294,7 +306,6 @@ function calculateAndUpdateWaterPercentage() {
     const sum = protein + fat + carbs + fiber + salt;
     // Calculate remaining water, ensuring it's not negative and clamp at 100
     const water = Math.max(0, Math.min(100, 100 - sum)); 
-    
     if (modalIngredientWaterInput) {
         modalIngredientWaterInput.value = water.toFixed(1); // Update the disabled input field
     }
@@ -341,13 +352,35 @@ function openAddIngredientModal() {
         alert('Please select a meal first.');
         return;
     }
-    if (modalIngredientNameInput) modalIngredientNameInput.value = ''; // Clear input
+    // Clear previous inputs and state
+    if (modalIngredientNameInput) modalIngredientNameInput.value = '';
+    if (modalIngredientSearchInput) modalIngredientSearchInput.value = '';
+    if (ingredientSearchResultsDiv) {
+        ingredientSearchResultsDiv.innerHTML = '<p class="placeholder-text">Search results will appear here.</p>';
+    }
+    if (loadSelectedIngredientButton) loadSelectedIngredientButton.disabled = true;
+    if (addNewIngredientButton) addNewIngredientButton.disabled = false; // Ensure Add New is enabled initially
+    if (modalExistingIngredientFeedback) modalExistingIngredientFeedback.textContent = '';
+
+    selectedExistingIngredientId = null; // Reset selected ID
+
     if (addIngredientModal) addIngredientModal.style.display = 'block';
-    if (modalIngredientNameInput) modalIngredientNameInput.focus(); // Focus input
+    if (modalIngredientNameInput) modalIngredientNameInput.focus(); // Focus the 'new' input first
 }
 
 function closeAddIngredientModal() {
     if (addIngredientModal) addIngredientModal.style.display = 'none';
+    // Clear state on close as well
+    if (modalIngredientNameInput) modalIngredientNameInput.value = '';
+    if (modalIngredientSearchInput) modalIngredientSearchInput.value = '';
+    if (ingredientSearchResultsDiv) {
+        ingredientSearchResultsDiv.innerHTML = '<p class="placeholder-text">Search results will appear here.</p>';
+    }
+    if (loadSelectedIngredientButton) loadSelectedIngredientButton.disabled = true;
+    if (addNewIngredientButton) addNewIngredientButton.disabled = false;
+    if (modalExistingIngredientFeedback) modalExistingIngredientFeedback.textContent = '';
+
+    selectedExistingIngredientId = null;
 }
 
 function openSetDaysModal() {
@@ -404,8 +437,8 @@ function openModifyIngredientModal(ingredientData) {
     if (modalIngredientFiberInput)   modalIngredientFiberInput.value = nutrientValues.fiber;
     if (modalIngredientSaltInput)    modalIngredientSaltInput.value = nutrientValues.salt;
     
-    // Calculate and set initial water value
-    calculateAndUpdateWaterPercentage(); 
+    // Calculate and set initial water value, in forced mode since modal is not yet visible
+    calculateAndUpdateWaterPercentage(true); 
     // Store the calculated water percentage in the previous state
     nutrientValues.water = modalIngredientWaterInput.value; 
 
@@ -593,7 +626,7 @@ async function addIngredient() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/meals/${selectedMeal.child.id}/ingredients?name=${encodeURIComponent(name)}`, {
+        const response = await fetch(`${API_BASE_URL}/meals/${selectedMeal.child.id}/ingredient?name=${encodeURIComponent(name)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -863,7 +896,7 @@ function updateAdventureDisplay() {
     if (adventureTitle) adventureTitle.style.display = 'none';
     // Update Adventure Basic Info
     document.getElementById('adventureNameDisplay').textContent = currentAdventure.name || '-';
-    document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 0} days`;
+    document.getElementById('adventureDuration').textContent = `${currentAdventure.days || 1} days`;
     document.getElementById('adventureCrewSize').textContent = `${currentAdventure.crewSize || 0} ${(currentAdventure.crewSize === 1) ? 'person' : 'persons'}`;
     document.getElementById('adventureCrewDailyKcalNeed').textContent = `${currentAdventure.crewDailyKcalNeed || 0} kCal / day`;
     document.getElementById('adventureWeight').textContent = `${(currentAdventure.weight || 0).toFixed(3)} kg`;
@@ -1462,4 +1495,190 @@ function clearInputHighlighting() {
             input.classList.remove('input-increased', 'input-decreased');
         }
     });
-} 
+}
+
+// --- Add Ingredient Modal - Search and Load Logic ---
+
+async function searchExistingIngredients() {
+    const query = modalIngredientSearchInput.value.trim();
+    if (!query) {
+        if (ingredientSearchResultsDiv) {
+            ingredientSearchResultsDiv.innerHTML = '<p class="placeholder-text">Please enter a search term.</p>';
+        }
+        loadSelectedIngredientButton.disabled = true;
+        selectedExistingIngredientId = null;
+        return;
+    }
+
+    // Indicate loading state
+    if (ingredientSearchResultsDiv) {
+        ingredientSearchResultsDiv.innerHTML = '<p class="placeholder-text">Searching...</p>';
+    }
+    loadSelectedIngredientButton.disabled = true;
+    selectedExistingIngredientId = null;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/ingredients/search?query=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+            throw new Error(`Search failed (status: ${response.status})`);
+        }
+        const results = await response.json();
+        displaySearchResults(results);
+
+    } catch (error) {
+        console.error('Error searching ingredients:', error);
+        if (ingredientSearchResultsDiv) {
+            ingredientSearchResultsDiv.innerHTML = `<p class="placeholder-text error-text">Error: ${error.message}</p>`;
+        }
+        loadSelectedIngredientButton.disabled = true;
+        selectedExistingIngredientId = null;
+    }
+}
+
+function displaySearchResults(results) {
+    if (!ingredientSearchResultsDiv) return;
+    ingredientSearchResultsDiv.innerHTML = ''; // Clear previous results or placeholder
+
+    if (!results || results.length === 0) {
+        ingredientSearchResultsDiv.innerHTML = '<p class="placeholder-text">No ingredients found matching your search.</p>';
+        loadSelectedIngredientButton.disabled = true;
+        selectedExistingIngredientId = null;
+        return;
+    }
+
+    results.forEach(ingredient => {
+        const card = document.createElement('div');
+        // Reuse ingredient-card style for consistency, add specific class for modal context
+        card.className = 'ingredient-card modal-search-result-item';
+        card.dataset.ingredientId = ingredient.id;
+        card.innerHTML = `
+            <div class="card-header-simple">
+                <h4>${ingredient.name || 'Unnamed Ingredient'}</h4>
+            </div>
+        `; // Keep it simple for search results
+        card.onclick = () => selectExistingIngredient(ingredient.id, card);
+        ingredientSearchResultsDiv.appendChild(card);
+    });
+}
+
+function selectExistingIngredient(ingredientId, selectedCardElement) {
+    // Remove 'selected' class from all other items
+    ingredientSearchResultsDiv.querySelectorAll('.modal-search-result-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+
+    // If the clicked item was already selected, deselect it
+    if (selectedExistingIngredientId === ingredientId) {
+        selectedExistingIngredientId = null;
+        loadSelectedIngredientButton.disabled = true;
+        // Optionally re-enable the 'Add New' button if it was disabled
+        // if (addNewIngredientButton) addNewIngredientButton.disabled = false;
+        if (modalExistingIngredientFeedback) modalExistingIngredientFeedback.textContent = '';
+    } else {
+        // Select the new item
+        selectedCardElement.classList.add('selected');
+        selectedExistingIngredientId = ingredientId;
+        loadSelectedIngredientButton.disabled = false;
+        // Optionally disable the 'Add New' button/input to prevent adding both
+        // if (addNewIngredientButton) addNewIngredientButton.disabled = true;
+        if (modalExistingIngredientFeedback) modalExistingIngredientFeedback.textContent = ''; // Clear feedback on new selection
+    }
+}
+
+async function loadSelectedIngredient() {
+    if (!selectedMeal || !selectedMeal.child) {
+        setExistingIngredientFeedback('Error: No meal selected.', true);
+        return;
+    }
+    if (!selectedExistingIngredientId) {
+        setExistingIngredientFeedback('Error: No ingredient selected from search results.', true);
+        return;
+    }
+
+    const mealId = selectedMeal.child.id;
+
+    // Indicate loading/processing
+    setExistingIngredientFeedback('Adding selected ingredient...', false);
+    loadSelectedIngredientButton.disabled = true; // Prevent double-click
+
+	let response;
+
+    try {
+
+		// Call the LOAD endpoint with the ingredient ID from the search results, loading the ingredient data into memory
+        const ingredientResponse = await fetch(`${API_BASE_URL}/ingredients/${selectedExistingIngredientId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+		const ingredientJson = await ingredientResponse.json();
+
+		const ingredientId = ingredientJson.id;
+
+		if (ingredientId === selectedExistingIngredientId) {
+        // Call the POST endpoint with the ingredient ID from the LOAD endpoint (should be the same) as a query parameter
+        response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredient?ingredientId=${ingredientId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+		} else {
+			console.error('Ingredient ID mismatch: ', ingredientId, selectedExistingIngredientId);
+			// Ingredient ID mismatch between database and memory.
+			throw new Error('Ingredient ID mismatch. Contact support.');
+		}
+
+        if (!response.ok) {
+             // Try to parse error message from backend if available
+            let errorMsg = `Failed to add ingredient (status: ${response.status})`;
+            try {
+                const errorData = await response.json();
+                if (errorData && errorData.message) {
+                    errorMsg = errorData.message;
+                }
+            } catch (parseError) { /* Ignore if response is not JSON */ }
+            throw new Error(errorMsg);
+        }
+
+        // Success
+        setExistingIngredientFeedback('Ingredient added successfully!', false);
+        closeAddIngredientModal();
+        await refreshCurrentAdventure();
+
+    } catch (error) {
+        console.error('Error loading/adding ingredient:', error);
+        setExistingIngredientFeedback(`Error: ${error.message}`, true);
+        // Re-enable button on error unless it was a selection issue
+        if (selectedExistingIngredientId) {
+             loadSelectedIngredientButton.disabled = false;
+        }
+    }
+}
+
+// Helper to set feedback in the 'Load Existing' section
+function setExistingIngredientFeedback(message, isError) {
+    if (modalExistingIngredientFeedback) {
+        modalExistingIngredientFeedback.textContent = message;
+        modalExistingIngredientFeedback.className = 'modal-feedback small-feedback'; // Reset
+        if (isError) {
+            modalExistingIngredientFeedback.classList.add('error');
+        } else {
+             modalExistingIngredientFeedback.classList.add('success'); // Use success class for loading/success msg
+        }
+    }
+}
+
+// Add Enter key listener for the search input
+if (modalIngredientSearchInput) {
+    modalIngredientSearchInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchExistingIngredients();
+        }
+    });
+}
+
+// --- End Add Ingredient Modal Search Logic --- 

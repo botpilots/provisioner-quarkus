@@ -188,7 +188,7 @@ meal_id=$(echo "$output" | tr -d '"')
 
 # Test 5: Add Ingredient
 run_test "Add Ingredient" \
-    "curl -s -X POST \"http://localhost:8080/meals/$meal_id/ingredients?name=Oats\"" \
+    "curl -s -X POST \"http://localhost:8080/meals/$meal_id/ingredient?name=Oats\"" \
     '"id_[uuid]"'
 
 # Store the ingredient ID from the response

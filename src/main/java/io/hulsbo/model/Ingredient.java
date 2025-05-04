@@ -1,11 +1,8 @@
 package io.hulsbo.model;
 
-import java.security.SecureRandom;
-import java.util.Set;
 import java.util.UUID;
 import java.util.Map;
 import io.quarkus.logging.Log;
-import io.hulsbo.util.model.baseclass.NutrientsMap;
 
 public class Ingredient extends BaseClass {
 
@@ -16,6 +13,11 @@ public class Ingredient extends BaseClass {
         for (UUID key : childMap.keySet()) {
             nutrientsMap.put(childMap.get(key).getChild().getName(), childMap.get(key).getRatio());
         }
+    }
+
+    // Call the overloaded constructor of BaseClass if id is provided
+    public Ingredient(UUID id) {
+        super(id);
     }
 
     /**

@@ -21,6 +21,7 @@ public abstract class BaseClass {
     private String name;
     protected final OffsetDateTime creationTime;
 
+	// Constructor creating new id
     public BaseClass() {
         this.creationTime = OffsetDateTime.now(ZoneOffset.ofHours(2));
         UUID id = UUID.randomUUID();
@@ -28,6 +29,14 @@ public abstract class BaseClass {
         this.name = "Unnamed " + getClass().getSimpleName();
         Manager.register(id, this);
     }
+
+	// Constructor accepting id as parameter
+	public BaseClass(UUID id) {
+		this.id = id;
+		this.creationTime = OffsetDateTime.now(ZoneOffset.ofHours(2));
+		this.name = "Unnamed " + getClass().getSimpleName();
+		Manager.register(id, this);
+	}
 
     public String getName() {
         return this.name;
@@ -191,6 +200,9 @@ public abstract class BaseClass {
      * @return UUID key of newChild
      */
     protected UUID putChild(BaseClass newChild, Double newWeightedValue, Double absWeight) {
+		if (newChild == null) {
+			throw new IllegalArgumentException("newChild cannot be null - must be a subclass of BaseClass.");
+		}
         ChildWrapper newChildWrapper = new ChildWrapper(newChild, newWeightedValue, absWeight);
         childMap.put(newChild.getId(), newChildWrapper);
         newChild.addParent(this.getId());
