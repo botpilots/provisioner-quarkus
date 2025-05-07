@@ -3,6 +3,7 @@ package io.hulsbo;
 import io.quarkus.test.junit.QuarkusTest;
 import io.hulsbo.model.Meal;
 import java.util.UUID;
+import io.hulsbo.util.model.MeasurementUnit;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -287,6 +288,7 @@ public class MealResourceTest {
 
         // Verify backend state hasn't changed (it should be whatever it was before the call)
         io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+		assertEquals(1.0, ingredient.getNutrientsMap().get("protein"), TOLERANCE, "Original protein ratio should be retained after failed update");
 	}
 
 	@Test
@@ -389,5 +391,163 @@ public class MealResourceTest {
 		assertEquals(expectedFat, ingredient.getNutrientsMap().get("fat"), TOLERANCE);
 		assertEquals(1.0, ingredient.getNutrientsMap().values().stream().mapToDouble(Double::doubleValue).sum(), TOLERANCE);
 	}
+
+	// --- New Tests for MeasurementUnit and pcsWeight --- 
+
+	@Test
+	public void testModifyIngredientMeasurementUnitOnly() {
+		String newUnit = MeasurementUnit.KILOGRAM.name();
+
+		given()
+			.queryParam("measurementUnit", newUnit)
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(200)
+			.contentType(ContentType.JSON)
+			.body("id", equalTo(testIngredientId.toString()))
+			.body("measurementUnit", equalTo(newUnit));
+
+		// Verify backend state
+		io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+		assertEquals(MeasurementUnit.KILOGRAM, ingredient.getMeasurementUnit());
+	}
+
+	@Test
+	public void testModifyIngredientPcsWeightOnly_Set() {
+		Double newPcsWeight = 15.5;
+
+		given()
+			.queryParam("pcsWeight", newPcsWeight)
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(200)
+			.contentType(ContentType.JSON)
+			.body("id", equalTo(testIngredientId.toString()))
+			.body("pcsWeight", is((float) newPcsWeight.doubleValue())); // Cast primitive double to float
+
+		// Verify backend state
+		io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+		assertEquals(newPcsWeight, ingredient.getPcsWeight(), TOLERANCE);
+	}
+
+	@Test
+	public void testModifyIngredientPcsWeightOnly_UnsetWithNull() {
+		// First, set a value
+		double initialPcsWeight = 20.0;
+		given()
+			.queryParam("pcsWeight", initialPcsWeight)
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+			.then().statusCode(200);
+
+		// Now, unset it by sending pcsWeight=null (or empty)
+		given()
+			.queryParam("pcsWeight", "null") // Test explicit string "null"
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(200)
+			.contentType(ContentType.JSON)
+			.body("id", equalTo(testIngredientId.toString()))
+			.body("pcsWeight", nullValue()); // Check that it's null in the response
+
+		// Verify backend state
+		io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+		assertEquals(null, ingredient.getPcsWeight());
+	}
+	
+	@Test
+	public void testModifyIngredientPcsWeightOnly_UnsetWithEmpty() {
+	    // First, set a value
+	    double initialPcsWeight = 25.0;
+	    given()
+	        .queryParam("pcsWeight", initialPcsWeight)
+	        .put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+	        .then().statusCode(200);
+
+	    // Now, unset it by sending an empty pcsWeight parameter
+	    given()
+	        .queryParam("pcsWeight", "") // Test empty string
+	    .when()
+	        .put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+	    .then()
+	        .statusCode(200)
+	        .contentType(ContentType.JSON)
+	        .body("id", equalTo(testIngredientId.toString()))
+	        .body("pcsWeight", nullValue()); // Should be unset
+
+	    // Verify backend state
+	    io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+	    assertEquals(null, ingredient.getPcsWeight());
+	}
+
+	@Test
+	public void testModifyIngredientPcsWeightInvalid_Zero() {
+		given()
+			.queryParam("pcsWeight", 0.0)
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(400)
+			.body("message", equalTo("pcsWeight must be greater than 0."));
+	}
+
+	@Test
+	public void testModifyIngredientPcsWeightInvalid_Negative() {
+		given()
+			.queryParam("pcsWeight", -10.0)
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(400)
+			.body("message", equalTo("pcsWeight must be greater than 0."));
+	}
+	
+	@Test
+	public void testModifyIngredientPcsWeightInvalid_NotANumber() {
+	    given()
+	        .queryParam("pcsWeight", "abc")
+	    .when()
+	        .put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+	    .then()
+	        .statusCode(400) // Expect Bad Request due to number format exception
+	        .body("message", containsString("Invalid number format for pcsWeight"));
+	}
+
+	@Test
+	public void testModifyIngredientMeasurementUnitInvalid() {
+		given()
+			.queryParam("measurementUnit", "INVALID_UNIT")
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(400) // Expect Bad Request due to invalid enum value
+			.body("message", containsString("Invalid measurementUnit value"));
+	}
+
+	@Test
+	public void testModifyIngredientWeightAndPcsWeight() {
+		double newWeight = 200.0;
+		double newPcsWeight = 50.0;
+
+		given()
+			.queryParam("weight", newWeight)
+			.queryParam("pcsWeight", newPcsWeight)
+		.when()
+			.put("/meals/{mealId}/ingredients/{ingredientId}", testMealId.toString(), testIngredientId.toString())
+		.then()
+			.statusCode(200)
+			.contentType(ContentType.JSON)
+			.body("pcsWeight", is((float) newPcsWeight)); // Cast primitive double to float
+
+		// Verify backend state
+		io.hulsbo.model.Ingredient ingredient = (io.hulsbo.model.Ingredient) io.hulsbo.model.Manager.getBaseClass(testIngredientId);
+		Meal meal = (Meal) io.hulsbo.model.Manager.getBaseClass(testMealId);
+		assertEquals(newPcsWeight, ingredient.getPcsWeight(), TOLERANCE);
+		assertEquals(newWeight, meal.getChildMap().get(testIngredientId).getRecipeWeight(), TOLERANCE);
+	}
+
+	// --- End New Tests --- 
 
 }

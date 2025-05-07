@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Provisioner - Adventurous Food Planning</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="/graphics/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/graphics/logo_sun.svg" type="image/svg+xml">
 </head>
 <body>
     <header class="site-header">
@@ -328,13 +328,39 @@
             <span class="close-button" onclick="closeModifyIngredientModal()">&times;</span>
             <h3>Modify Ingredient: <span id="modalIngredientModifyName">-</span></h3>
             <input type="hidden" id="modalIngredientModifyId">
-            
-            <!-- Nutrient Inputs -->
-            <div class="input-group"> 
-                <label for="modalIngredientWeight">Weight (g)</label>
-                <input type="number" id="modalIngredientWeight" min="0" step="0.1" value="100"> 
-            </div>
 
+            <!-- New Inline Weight/Unit Controls -->
+			 <div class="modal-inline-form-row">
+				<div class="input-group">
+					<label for="modalIngredientWeight" title="Recipe weight is the weight of the ingredient in the recipe (used for calculating proportionality between ingredients).">Recipe Weight</label>
+					<div class="inline-weight-controls">
+						<input type="number" id="modalIngredientWeight" min="0" step="1" value="100"> <!-- Default step is 1 (gram) -->
+						<div class="unit-dropdown-container" id="modalIngredientUnitDropdownContainer">
+							<span class="converted-value-label" id="modalIngredientConvertedValue" style="display: none;">-</span> <!-- Hidden by default -->
+							 <button type="button" class="unit-dropdown-button" id="modalIngredientUnitButton">
+								 <span class="unit-text">grams</span> <span class="dropdown-arrow">▾</span>
+							 </button>
+							 <div class="unit-dropdown-menu" id="modalIngredientUnitDropdown" style="display: none;">
+								 <!-- Options will be populated by JS -->
+							 </div>
+						 </div>
+						<button type="button" class="pcs-button" id="modalIngredientPcsButton" style="display: none;">Set</button> <!-- Hidden by default -->
+						
+	  
+					</div>
+				</div>
+				<div class="input-group">
+					<label for="modalIngredientDensity" title="Density in g/ml, used for volume unit conversions. Defaults to 1.0 (water).">Density (g/ml)</label>
+					  <!-- Density Input and Button - Moved Inline -->
+					  <div class="inline-weight-controls">
+						<label for="modalIngredientDensity" class="sr-only">Density (g/ml)</label> <!-- Screen-reader only label -->
+						<input type="number" id="modalIngredientDensity" min="0.01" step="0.01" value="1.0" title="Density in g/ml"> 
+						<button type="button" class="button" id="modalIngredientDensityUpdateButton" title="Update density only">Set</button>
+					 </div>
+				</div>
+			 </div>
+
+            <!-- Existing Nutrient Inputs -->
             <div class="input-group">
                 <label>Nutrient Ratios (%)</label>
                 <div class="input-row">
