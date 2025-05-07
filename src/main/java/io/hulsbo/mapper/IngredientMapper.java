@@ -55,6 +55,7 @@ public class IngredientMapper {
         nutrientUpdates.put("water", waterRatio);
 
         // Ignore density if null (should default to water i.e. 1.0)
+		// TODO: THIS IS WRONG, needs to use not implemented method getDensity().
         if (entity.density_g_ml != null) {
             nutrientUpdates.put("density", entity.density_g_ml.doubleValue());
         }

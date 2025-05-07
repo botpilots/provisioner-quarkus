@@ -4,12 +4,14 @@ import java.util.UUID;
 import io.hulsbo.util.model.baseclass.ChildWrapper;
 import io.hulsbo.util.model.baseclass.NutrientsMap;
 import io.quarkus.logging.Log;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class BaseClass {
     protected final NutrientsMap nutrientsMap = new NutrientsMap();
     protected final Map<UUID, ChildWrapper> childMap = new LinkedHashMap<>();
@@ -65,7 +67,6 @@ public abstract class BaseClass {
     public double getEnergyDensity() {
         return this.energyDensity;
     }
-
 
     public NutrientsMap getNutrientsMap() {
         return nutrientsMap;
@@ -393,6 +394,4 @@ public abstract class BaseClass {
         }
         Log.infof("[%s ID: %s] Exiting updateAndPropagate.", getClass().getSimpleName(), getId());
     }
-
-    public abstract double getTotalWeight();
 }

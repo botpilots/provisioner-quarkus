@@ -1,4 +1,4 @@
-package io.hulsbo;
+package io.hulsbo.resource;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -41,7 +41,7 @@ public class MealResource {
 	}
 
 	@POST
-	@Path("/{id}/ingredient")
+	@Path("/{id}/ingredients")
 	public Response addIngredient(@PathParam("id") UUID mealId, @QueryParam("name") String name, @QueryParam("ingredientId") UUID ingredientId) {
 		Log.infof("POST /meals/%s/ingredient - Entering addIngredient with name=%s and id=%s", mealId, name, ingredientId);
 		if (ingredientId != null && name != null) {

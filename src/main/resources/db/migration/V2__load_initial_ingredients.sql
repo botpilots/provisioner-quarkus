@@ -2530,4 +2530,5 @@ VALUES
     ('Butterscotch', 'Knäck', 0.0250, 0.2230, 0.6250, 0.0140, 0.0050, NULL),
     ('Mashed potato powder', 'Potatismos pulver', 0.0910, 0.0150, 0.6800, 0.0830, 0.0300, NULL),
     ('Mashed potato powder prepared', 'Potatismos pulver tillagat', 0.0170, 0.0030, 0.1270, 0.0150, 0.0060, NULL),
-    ('Dark chocolate w. sweetener', 'Mörk choklad m. sötningsm.', 0.0840, 0.4390, 0.3400, 0.1080, 0.0000, NULL);
+    ('Dark chocolate w. sweetener', 'Mörk choklad m. sötningsm.', 0.0840, 0.4390, 0.3400, 0.1080, 0.0000, NULL)
+    ON CONFLICT (name) DO NOTHING;

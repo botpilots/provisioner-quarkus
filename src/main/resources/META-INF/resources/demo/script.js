@@ -626,7 +626,7 @@ async function addIngredient() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/meals/${selectedMeal.child.id}/ingredient?name=${encodeURIComponent(name)}`, {
+        const response = await fetch(`${API_BASE_URL}/meals/${selectedMeal.child.id}/ingredients?name=${encodeURIComponent(name)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1619,7 +1619,7 @@ async function loadSelectedIngredient() {
 
 		if (ingredientId === selectedExistingIngredientId) {
         // Call the POST endpoint with the ingredient ID from the LOAD endpoint (should be the same) as a query parameter
-        response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredient?ingredientId=${ingredientId}`, {
+        response = await fetch(`${API_BASE_URL}/meals/${mealId}/ingredients?ingredientId=${ingredientId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

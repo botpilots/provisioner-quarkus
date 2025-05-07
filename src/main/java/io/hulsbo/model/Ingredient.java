@@ -105,9 +105,5 @@ public class Ingredient extends BaseClass {
         Log.infof("[Ingredient ID: %s] Exiting updateAndPropagate.", getId());
     }
 
-    public double getTotalWeight() {
-        // Implementation of getTotalWeight method
-        return 0.0; // Placeholder return, actual implementation needed
-    }
 }
 

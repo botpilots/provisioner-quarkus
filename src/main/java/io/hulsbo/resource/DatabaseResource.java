@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.annotations.jaxrs.QueryParam; // If using RESTEasy specific, else use jakarta.ws.rs.QueryParam
 import org.jboss.logging.Logger; // Import Logger
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -95,6 +96,7 @@ public class DatabaseResource {
             // --- Create New Ingredient ---
             IngredientEntity newEntity = ingredientMapper.toEntity(ingredientFromBody);
             newEntity.id = id; // Set the ID provided in the path
+            newEntity.density_g_ml = BigDecimal.valueOf(1);
             newEntity.persist();
 
             Ingredient createdDomainObject = ingredientMapper.toDomain(newEntity); // Map back for response
