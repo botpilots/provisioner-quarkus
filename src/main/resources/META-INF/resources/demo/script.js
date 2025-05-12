@@ -550,8 +550,9 @@ function updateWeightInputStep() {
 							console.warn("Cannot calculate volume step without valid density (> 0).");
 							disableStepping = true;
 						} else {
-							// Calculate the gram equivalent of 1 unit of volume
-							stepValue = standardGrams / currentDensity;
+							// Calculate the gram/unit based on ml/unit and density g/ml.
+							// e.g: g/unit = ml/unit * g/ml
+							stepValue = standardGrams * currentDensity;
 						}
 					} else {
 						// Step for weight units is just the standard grams
