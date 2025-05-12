@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS ingredients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL UNIQUE,
-    name_sv VARCHAR(255) NOT NULL UNIQUE,
+    -- Swedish original name from source, null if created by user.
+    name_sv VARCHAR(255) UNIQUE,
     -- Core nutrient ratios
     protein_ratio NUMERIC(5, 4) NOT NULL DEFAULT 0.0 CHECK (protein_ratio >= 0.0 AND protein_ratio <= 1.0),
     fat_ratio NUMERIC(5, 4) NOT NULL DEFAULT 0.0 CHECK (fat_ratio >= 0.0 AND fat_ratio <= 1.0),
