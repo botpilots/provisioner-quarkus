@@ -97,5 +97,34 @@ public class DatabaseResourceTest {
 			.body("id", is(createdIngredientId.toString())) // Assert the correct ID
 			.body("name", is("ingredientToSave")); // Assert the correct name
 	}
+
+	// Delete the saved ingredient
+	@Test
+	@Order(5)
+	public void deleteSavedIngredient() throws Exception {
+
+		IngredientEntity existingEntity = IngredientEntity.findById(createdIngredientId);
+
+		if (existingEntity == null) {
+			Log.error("Test deleteSavedIngredient() cannot be performed as there's no ingredient to delete. Run saveIngredientToDb() first or whole test module instead.");
+			throw new Exception("Nothing to delete at beginning of test. Run saveIngredientToDb() first or whole test module instead.");
+		}
+
+		// Delete the ingredient
+		given()
+			.pathParam("id", createdIngredientId)
+			.when()
+			.delete("/ingredients/{id}")
+			.then()
+			.statusCode(204); // Expect 204 No Content for successful deletion
+		
+		// Then verify it's no longer available
+		given()
+			.pathParam("id", createdIngredientId)
+			.when()
+			.delete("/ingredients/{id}")
+			.then()
+			.statusCode(404); // Expect 404 Not Found since it was deleted
+	}
 	
 }

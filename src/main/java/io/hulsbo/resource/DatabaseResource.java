@@ -110,4 +110,21 @@ public class DatabaseResource {
             return Response.created(createdUri).entity(createdDomainObject).build();
         }
     }
+
+	// --- Delete Endpoint (DELETE /ingredients/{id}) ---
+	@DELETE
+	@Path("/{id}")
+	@Transactional
+	public Response deleteIngredient(@PathParam("id") UUID id) {
+
+        IngredientEntity existingEntity = IngredientEntity.findById(id);
+        if (existingEntity != null) {
+            IngredientEntity.deleteById(id);
+            Log.info("Ingredient " + id + " was successfully deleted.");
+            return Response.noContent().build();
+        } else {
+            Log.warn("Could not delete ingredient with id " + id + " as it was not found.");
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+	}
 }
