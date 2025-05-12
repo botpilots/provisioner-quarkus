@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.annotations.jaxrs.QueryParam; // If using RESTEasy specific, else use jakarta.ws.rs.QueryParam
 import org.jboss.logging.Logger; // Import Logger
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class DatabaseResource {
     @Inject
     IngredientMapper ingredientMapper;
 
-    // --- Search Endpoint --- (Previously created)
+    // --- Search Endpoint (GET /ingredients/search?query) ---
     @GET
     @Path("/search")
     public Response searchIngredients(@QueryParam("query") String query) {
