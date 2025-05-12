@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS ingredients (
     carbs_ratio NUMERIC(5, 4) NOT NULL DEFAULT 0.0 CHECK (carbs_ratio >= 0.0 AND carbs_ratio <= 1.0),
     fiber_ratio NUMERIC(5, 4) NOT NULL DEFAULT 0.0 CHECK (fiber_ratio >= 0.0 AND fiber_ratio <= 1.0),
     salt_ratio NUMERIC(5, 4) NOT NULL DEFAULT 0.0 CHECK (salt_ratio >= 0.0 AND salt_ratio <= 1.0),
-    -- Density
+    -- Density, null should result in that Ingredient default density 1.0 will be used.
     density_g_ml NUMERIC(6, 3) CHECK (density_g_ml > 0.0),
 
     -- Metadata columns

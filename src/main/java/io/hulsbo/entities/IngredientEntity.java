@@ -33,7 +33,8 @@ public class IngredientEntity extends PanacheEntityBase {
     @Column(name = "salt_ratio", nullable = false)
     public BigDecimal salt_ratio;
 
-    @Column(name = "density_g_ml", nullable = false)
+    // density_g_ml is nullable, meaning that the models default density 1.0 should be used.
+    @Column(name = "density_g_ml")
     public BigDecimal density_g_ml;
 
     // Panache provides basic finders, persist, etc.

@@ -102,7 +102,7 @@ public class DatabaseResource {
             // --- Create New Ingredient ---
             IngredientEntity newEntity = ingredientMapper.toEntity(ingredientFromBody);
             newEntity.id = id; // Set the ID provided in the path
-            newEntity.density_g_ml = BigDecimal.valueOf(1);
+            newEntity.density_g_ml = null;
             newEntity.persist();
 
             Ingredient createdDomainObject = ingredientMapper.toDomain(newEntity); // Map back for response
