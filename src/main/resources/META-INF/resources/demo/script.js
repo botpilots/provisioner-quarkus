@@ -9,7 +9,6 @@ let selectedIngredient = null; // Add state for selected ingredient
 let ingredientToModify = null; // Temp store for ingredient being modified
 let lastAdventureData = null;  // Store last fetched adventure data for comparison
 let previousIngredientModalState = {}; // Store previous values for comparison
-let lastValidNutrientsOnError = null; // Added reset button
 let selectedExistingIngredientId = null; // Store ID of ingredient selected from search
 let lastValidNutrientsOnError = null; // Stores nutrient state for the reset button if an update fails
 let availableMeasurementUnits = []; // Holds array of {name, standardGrams, isVolume}
