@@ -1383,19 +1383,6 @@ function updateAdventureDisplay() {
 					card.className = 'ingredient-card' + (selectedIngredient && selectedIngredient.child.id === ingredient.id ? ' selected' : '');
 					card.dataset.ingredientId = ingredient.id;
 
-					// Add Unit/PCS info to card display
-					let unitInfo = '';
-					if (ingredient.measurementUnit && ingredient.measurementUnit !== 'GRAM') {
-						unitInfo += `${ingredient.measurementUnit}`;
-						if (ingredient.measurementUnit === 'PCS' && ingredient.pcsWeight) {
-							unitInfo += ` (${ingredient.pcsWeight}g/pcs)`;
-						}
-					} else {
-						unitInfo = 'GRAM'; // Explicitly show GRAM if it is the unit
-					}
-					// Show density if not 1.0
-					let densityInfo = (ingredient.density && ingredient.density !== 1.0) ? `, ${ingredient.density.toFixed(2)}g/ml` : '';
-
 					card.innerHTML = `
                         <div class="card-header">
                             <h4>${ingredient.name || 'Unknown'}</h4>
@@ -1406,7 +1393,7 @@ function updateAdventureDisplay() {
                                 </button>
                             </div>
                         </div>
-                        <p>Unit: ${unitInfo}${densityInfo}</p>
+                        <p>Density: ${ingredient.density.toFixed(2)} g/ml</p>
                         <p>Recipe Weight: ${ingredientData.recipeWeight || 0} g</p>
                         <p>Recipe W. Ratio: ${(ingredientData.ratio * 100).toFixed(1)} %</p>
                         <p>Calc. value: ${(currentAdventure.ingredientWeights && currentAdventure.ingredientWeights[ingredient.id] !== undefined ? currentAdventure.ingredientWeights[ingredient.id].toFixed(3) : '0.000')} kg</p>
