@@ -3,6 +3,7 @@ package io.hulsbo.resource;
 import io.hulsbo.entities.IngredientEntity;
 import io.hulsbo.mapper.IngredientMapper;
 import io.hulsbo.model.Ingredient; // Assuming this is the POJO
+import io.quarkus.logging.Log;
 import io.hulsbo.dto.IngredientSearchResultDTO;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -88,11 +89,16 @@ public class DatabaseResource {
 
         if (existingEntity != null) {
             // --- Update Existing Ingredient ---
+            Log.info("Updating since entity is not null: " + existingEntity);
             ingredientMapper.updateEntity(ingredientFromBody, existingEntity);
+
             // Panache handles the update commit automatically due to @Transactional
             Ingredient updatedDomainObject = ingredientMapper.toDomain(existingEntity); // Map back for response
+
             return Response.ok(updatedDomainObject).build();
         } else {
+            Log.info("Creating new entity since entity is null: " + existingEntity);
+
             // --- Create New Ingredient ---
             IngredientEntity newEntity = ingredientMapper.toEntity(ingredientFromBody);
             newEntity.id = id; // Set the ID provided in the path
