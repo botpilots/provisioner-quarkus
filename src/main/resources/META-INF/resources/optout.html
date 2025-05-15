@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opt-Out - Provisioner</title>
+    <link rel="stylesheet" href="/demo/styles.css"> <!-- Assuming common styles -->
+    <link rel="icon" href="/graphics/logo_sun.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Montserrat', sans-serif;
+            padding: 20px;
+        }
+        .container {
+            background-color: var(--bg-medium);
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+        }
+        p, label {
+            margin-bottom: 15px;
+            color: var(--text-medium);
+        }
+        .email-display {
+            font-weight: bold;
+            color: var(--accent-secondary);
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            min-height: 80px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .cta-button {
+            padding: 12px 25px;
+            font-size: 1em;
+            background-color: var(--accent-primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
+        .cta-button:hover:not(:disabled) {
+            background-color: #e08f50; /* Darker shade of accent-primary */
+        }
+        .cta-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .message {
+            margin-top: 20px;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        .message.success {
+            color: green;
+        }
+        .message.error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/graphics/logo.svg" alt="Provisioner Logo" style="max-width: 150px; margin-bottom: 20px;">
+        <h1>Unsubscribe</h1>
+        <p>We're sorry to see you go. Please provide a reason for unsubscribing.</p>
+        <p>Email to unsubscribe: <span id="emailToOptOut" class="email-display"></span></p>
+        
+        <form id="optOutForm">
+            <div>
+                <label for="optOutReason" style="display:block; margin-bottom: 5px; text-align: left;">Reason (min. 10 characters):</label>
+                <textarea id="optOutReason" name="reason" placeholder="Please tell us why you are unsubscribing..."></textarea>
+            </div>
+            <button type="submit" id="optOutBtn" class="cta-button" disabled>Opt-Out</button>
+        </form>
+        <div id="optOutMessage" class="message"></div>
+        <p style="font-size:0.8em; margin-top: 30px;"><a href="/index.html" style="color: var(--text-medium);">Back to homepage</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailSpan = document.getElementById('emailToOptOut');
+            const reasonTextarea = document.getElementById('optOutReason');
+            const optOutBtn = document.getElementById('optOutBtn');
+            const optOutMessage = document.getElementById('optOutMessage');
+            const optOutForm = document.getElementById('optOutForm');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromQuery = urlParams.get('email');
+
+            if (emailFromQuery) {
+                emailSpan.textContent = emailFromQuery;
+            } else {
+                emailSpan.textContent = 'No email provided.';
+                optOutMessage.textContent = 'Error: Email address not found in URL.';
+                optOutMessage.className = 'message error';
+                reasonTextarea.disabled = true;
+                optOutBtn.disabled = true;
+            }
+
+            reasonTextarea.addEventListener('input', function() {
+                if (reasonTextarea.value.trim().length >= 10) {
+                    optOutBtn.disabled = false;
+                } else {
+                    optOutBtn.disabled = true;
+                }
+            });
+
+            optOutForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                if (!emailFromQuery) {
+                    optOutMessage.textContent = 'Cannot proceed: Email is missing.';
+                    optOutMessage.className = 'message error';
+                    return;
+                }
+
+                const reason = reasonTextarea.value.trim();
+                optOutMessage.textContent = 'Processing...';
+                optOutMessage.className = 'message';
+                optOutBtn.disabled = true; // Disable button during processing
+
+                fetch(`/opt/out?email=${encodeURIComponent(emailFromQuery)}&reason=${encodeURIComponent(reason)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    // If response is not ok, parse JSON for error message
+                    return response.json().then(err => Promise.reject(err)); 
+                })
+                .then(data => {
+                    optOutMessage.textContent = 'Successfully opted out. You will no longer receive emails from us.';
+                    optOutMessage.className = 'message success';
+                    reasonTextarea.disabled = true;
+                    // optOutBtn remains disabled after successful opt-out
+                })
+                .catch(error => {
+                    console.error('Opt-out error:', error);
+                    optOutMessage.textContent = `Opt-out failed: ${error.message || 'An unexpected error occurred.'}`;
+                    optOutMessage.className = 'message error';
+                    optOutBtn.disabled = false; // Re-enable button on failure if email is present
+                    if (!emailFromQuery) optOutBtn.disabled = true;
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
