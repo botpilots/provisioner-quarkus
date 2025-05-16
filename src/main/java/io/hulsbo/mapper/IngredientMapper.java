@@ -43,8 +43,8 @@ public class IngredientMapper {
         if (entity.carbs_ratio != null) {
              nutrientUpdates.put("carbs", entity.carbs_ratio.doubleValue());
         }
-         if (entity.fiber_ratio != null) {
-             nutrientUpdates.put("fiber", entity.fiber_ratio.doubleValue());
+         if (entity.fiber_and_ash_ratio != null) {
+             nutrientUpdates.put("fiber", entity.fiber_and_ash_ratio.doubleValue());
         }
         if (entity.salt_ratio != null) {
              nutrientUpdates.put("salt", entity.salt_ratio.doubleValue());
@@ -96,7 +96,7 @@ public class IngredientMapper {
         target.protein_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("protein", 0.0));
         target.fat_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("fat", 0.0));
         target.carbs_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("carbs", 0.0));
-        target.fiber_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("fiber", 0.0));
+        target.fiber_and_ash_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("fiber", 0.0));
         target.salt_ratio = BigDecimal.valueOf(sourceMap.getOrDefault("salt", 0.0));
         // Water is 1 - sum(entity nutrients) so can't be set here
 		// Density is taken as a field of Ingredient
@@ -129,7 +129,7 @@ public class IngredientMapper {
         entity.protein_ratio = BigDecimal.valueOf(domainMap.getOrDefault("protein", 0.0));
         entity.fat_ratio = BigDecimal.valueOf(domainMap.getOrDefault("fat", 0.0));
         entity.carbs_ratio = BigDecimal.valueOf(domainMap.getOrDefault("carbs", 0.0));
-        entity.fiber_ratio = BigDecimal.valueOf(domainMap.getOrDefault("fiber", 0.0));
+        entity.fiber_and_ash_ratio = BigDecimal.valueOf(domainMap.getOrDefault("fiber", 0.0));
         entity.salt_ratio = BigDecimal.valueOf(domainMap.getOrDefault("salt", 0.0));
         // Water is 1 - sum(entity nutrients) so can't be set here
 	
