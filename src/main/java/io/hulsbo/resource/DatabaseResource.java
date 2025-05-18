@@ -51,7 +51,7 @@ public class DatabaseResource {
 
         // 2. Map entities to DTOs
         List<IngredientSearchResultDTO> results = matchingEntities.stream()
-                .map(entity -> new IngredientSearchResultDTO(entity.id, entity.name))
+                .map(entity -> new IngredientSearchResultDTO(entity.id, entity.name, entity.created_by_user_id))
                 .toList();
 
         return Response.ok(results).build();

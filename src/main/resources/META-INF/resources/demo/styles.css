@@ -10,6 +10,7 @@
 :root {
     --bg-dark: #2d2d2d; /* Dark charcoal */
     --bg-medium: #4a4a4a; /* Medium grey for cards/sections */
+    --bg-medium-light: #5a5a5a; /* Lighter medium grey for special cards/sections (e.g. user created ingredients) */
     --bg-light: #f5f5f5; /* Original light bg for contrast if needed */
     --text-light: #f0eee9; /* Creamy off-white */
     --text-medium: #bdbdbd; /* Lighter grey for secondary text */
@@ -924,8 +925,8 @@ button:active {
      color: var(--text-light); /* Ensure text is light when selected */
 }
 
-.card-header-simple {
-    /* Simplified version of card-header for search results */
+.modal-search-result-item.user-created { /* User created ingredients are medium-light */
+    background-color: var(--bg-medium-light);
 }
 
 .modal-footer-load {

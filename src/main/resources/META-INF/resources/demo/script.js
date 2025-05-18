@@ -2104,11 +2104,12 @@ function displaySearchResults(results) {
 	results.forEach(ingredient => {
 		const card = document.createElement('div');
 		// Reuse ingredient-card style for consistency, add specific class for modal context
-		card.className = 'ingredient-card modal-search-result-item';
+		card.className = 'ingredient-card modal-search-result-item' + (ingredient.created_by_user_id !== null ? ' user-created' : ' system-default');
 		card.dataset.ingredientId = ingredient.id;
 		card.innerHTML = `
             <div class="card-header-simple">
                 <h4>${ingredient.name || 'Unnamed Ingredient'}</h4>
+                ${ingredient.created_by_user_id !== null ? '<p>User Created</p>' : ''}
             </div>
         `; // Keep it simple for search results
 		card.onclick = () => selectExistingIngredient(ingredient.id, card);
