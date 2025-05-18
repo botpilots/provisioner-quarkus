@@ -984,7 +984,7 @@ button:active {
 
 .converted-value-label {
 	position: absolute; /* Position it absolutely within the unit-dropdown-container, i.e. left and inline with the dropdown button */
-	left: -50px; /* Align it to the left of the dropdown button */
+	left: -80px; /* Align it to the left of the dropdown button */
 	top: 18%; /* Center it vertically to the dropdown button */
     text-align: right;
     font-style: italic;

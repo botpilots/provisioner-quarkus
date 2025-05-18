@@ -20,7 +20,7 @@ let currentDensity = 1.0; // Store the current density (g/ml)
 const UNIT_ABBREVIATIONS = {
     GRAM: "g",
     KILOGRAM: "kg",
-    PCS: "g/pcs",
+    PCS: "pcs",
     TEASPOON: "tsp",
     TABLESPOON: "tbsp",
     CUP: "cup",
@@ -477,17 +477,17 @@ function updateConvertedValueLabel() {
 			modalIngredientConvertedValue.textContent = '';
 			break;
 		case 'PCS':
-			modalIngredientUnitDropdownContainer.style.marginLeft = '60px';
+			modalIngredientUnitDropdownContainer.style.marginLeft = '80px';
 			if (currentPcsWeight && currentPcsWeight > 0) {
 				// Use a small tolerance for zero check due to potential floating point inaccuracies
 				const pieceCount = weightInGrams / currentPcsWeight;
-				modalIngredientConvertedValue.textContent = Math.abs(pieceCount) < 0.001 ? '0.00' : pieceCount.toFixed(1);
+				modalIngredientConvertedValue.textContent = Math.abs(pieceCount) < 0.001 ? 'g = ' + '0.00' : 'g = ' + pieceCount.toFixed(1);
 			} else {
 				modalIngredientConvertedValue.textContent = '-';
 			}
 			break;
 		default: // Handles KG, LITER, ML, TSP, TBSP, CUP, etc. based on config
-			modalIngredientUnitDropdownContainer.style.marginLeft = '60px';
+			modalIngredientUnitDropdownContainer.style.marginLeft = '80px';
 			let standardGrams = unitConfig.standardGrams;
 			if (standardGrams === null || standardGrams === undefined) {
 				console.warn(`Standard grams not defined for unit: ${unitConfig.name}`);
@@ -520,8 +520,8 @@ function updateConvertedValueLabel() {
 			const isEffectivelyZero = Math.abs(valueToShow) < 0.001;
 			// Display with specific 0.00 format or reasonable precision otherwise
 			modalIngredientConvertedValue.textContent = isEffectivelyZero
-				? '0.00'
-				: valueToShow.toFixed(valueToShow < 0.1 ? 3 : (valueToShow < 10 ? 2 : 1));
+				? 'g = ' + '0.00'
+				: 'g = ' + valueToShow.toFixed(valueToShow < 0.1 ? 3 : (valueToShow < 10 ? 2 : 1));
 			break;
 	}
 }
@@ -593,11 +593,16 @@ function updatePcsButtonState() {
 		const weightInGrams = parseFloat(modalIngredientWeightInput.value) || 0;
 
 		if (currentPcsWeight && currentPcsWeight > 0) {
-			// If pcsWeight is set, check if current input matches it
+			// Update title attributes for PCS button and unit button
+			modalIngredientPcsButton.title = `Now set to ${currentPcsWeight}g. Click to unset.)`;
+			modalIngredientUnitButton.title = `grams per piece (${currentPcsWeight}g)`;
+
+			// Check if current input matches
 			if (Math.abs(weightInGrams - currentPcsWeight) < 0.001) { // Use tolerance for float comparison
 				modalIngredientPcsButton.textContent = 'Unset';
 			} else {
 				modalIngredientPcsButton.textContent = 'Set';
+				
 			}
 		} else {
 			// pcsWeight is not set
@@ -666,6 +671,7 @@ async function handlePcsButtonClick() {
 		updatePcsButtonState();
 		updateConvertedValueLabel();
 		updateWeightInputStep();
+		populateUnitDropdown();
 
 		// Consider uncommenting if the main adventure display needs immediate reflection of pcsWeight change
 		// refreshCurrentAdventure();
@@ -687,9 +693,13 @@ function populateUnitDropdown() {
 		item.href = '#';
 		item.textContent = UNIT_ABBREVIATIONS[unitConfig.name] || unitConfig.name.toLowerCase();
 		item.dataset.unit = unitConfig.name; // Store the enum name
-
 		// Construct and set the title attribute for the dropdown item
 		let title = unitConfig?.description || unitConfig.name;
+		if (unitConfig.name === 'PCS' && currentPcsWeight) {
+			title = `grams per piece (${currentPcsWeight}g)`;
+		} else if (unitConfig.name === 'PCS') {
+			title = `grams per piece (not set)`;
+		}
 		item.title = title;
 
 		item.onclick = (e) => {
@@ -712,12 +722,17 @@ function selectUnit(unitName) { // Parameter is the unit name (string)
 	selectedMeasurementUnit = unitName; // Update the state
 	console.log(`Unit selected: ${selectedMeasurementUnit}`);
 
-	// Update button text and title attribute for tooltip
+	// Update button text and title attribute for tooltip (after clicking on some unit in the dropdown)
 	if (modalIngredientUnitButton) {
 		modalIngredientUnitButton.querySelector('.unit-text').textContent = 
 		UNIT_ABBREVIATIONS[unitConfig.name] || unitConfig.name.toLowerCase();
 		// Construct title string
 		let title = unitConfig?.description || '';
+		if (unitConfig.name === 'PCS' && currentPcsWeight) {
+			title = `grams per piece (${currentPcsWeight}g)`;
+		} else if (unitConfig.name === 'PCS') {
+			title = `grams per piece (not set)`;
+		}
 		modalIngredientUnitButton.title = title;
 	}
 
