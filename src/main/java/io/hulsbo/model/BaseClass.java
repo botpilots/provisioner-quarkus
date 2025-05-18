@@ -342,16 +342,6 @@ public abstract class BaseClass {
         return creationTime;
     }
 
-    /**
-     * Get all children, sorted from oldest to newest.
-     * @return List<ChildWrapper>
-     */
-   public List<ChildWrapper> getAllChildren() {
-        return childMap.values().stream()
-                .sorted(Comparator.comparing(wrapper -> wrapper.getChild().getCreationTime()))
-                .collect(Collectors.toList());
-    }
-
     // NOTE: Used in template.
     public Map<UUID, ChildWrapper> getChildMap() {
         return childMap;

@@ -89,7 +89,6 @@ run_test "Create a New Adventure" \
   "crewSize": 0,
   "allCrewMembers": [],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -133,7 +132,6 @@ run_test "Add Crew Member" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -174,7 +172,6 @@ run_test "Set Number of Days" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -246,7 +243,6 @@ run_test "Get All Adventures" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }]'
 

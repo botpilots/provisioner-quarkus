@@ -175,10 +175,10 @@ async function refreshCurrentAdventure() {
 
 			// Re-select meal/ingredient if they still exist in the new data
 			if (selectedMeal && selectedMeal.child) {
-				const updatedMealData = currentAdventure.allChildren.find(m => m.child && m.child.id === selectedMeal.child.id);
+				const updatedMealData = getChildrenFromMap(currentAdventure.childMap).find(m => m.child && m.child.id === selectedMeal.child.id);
 				selectedMeal = updatedMealData || null;
 				if (selectedMeal && selectedIngredient && selectedIngredient.child) {
-					const updatedIngredientData = selectedMeal.child.allChildren.find(i => i.child && i.child.id === selectedIngredient.child.id);
+					const updatedIngredientData = getChildrenFromMap(selectedMeal.child.childMap).find(i => i.child && i.child.id === selectedIngredient.child.id);
 					selectedIngredient = updatedIngredientData || null;
 				}
 			}
@@ -1307,8 +1307,9 @@ function updateAdventureDisplay() {
 	// Update Meals
 	const mealsList = document.getElementById('mealsList');
 	mealsList.innerHTML = '';
-	if (currentAdventure.allChildren && Array.isArray(currentAdventure.allChildren) && currentAdventure.allChildren.length > 0) {
-		currentAdventure.allChildren.forEach(mealData => {
+	const meals = getChildrenFromMap(currentAdventure.childMap);
+	if (meals && meals.length > 0) {
+		meals.forEach(mealData => {
 			if (mealData && mealData.child) {
 				const meal = mealData.child;
 				const card = document.createElement('div');
@@ -1324,10 +1325,10 @@ function updateAdventureDisplay() {
                     <p>Calc. Weight: ${(currentAdventure.mealWeights && currentAdventure.mealWeights[meal.id] !== undefined ? currentAdventure.mealWeights[meal.id].toFixed(3) : '0.000')} kg</p>
                     <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'} kCal / kg</p>
                     <p>Ratio: ${Math.round(mealData.ratio * 100) || '0.0'} %</p>
-                    <p>${(meal.allChildren && Array.isArray(meal.allChildren) ? meal.allChildren.length : 0)} ingredients</p>
+                    <p>${(getChildrenFromMap(meal.childMap) ? getChildrenFromMap(meal.childMap).length : 0)} ingredients</p>
                 `;
 				// Pass the full meal object from currentAdventure to preserve nutrientMap
-				const fullMealData = currentAdventure.allChildren.find(m => m.child && m.child.id === meal.id);
+				const fullMealData = meals.find(m => m.child && m.child.id === meal.id);
 				card.onclick = () => selectMeal(fullMealData);
 				mealsList.appendChild(card);
 			}
@@ -1339,7 +1340,7 @@ function updateAdventureDisplay() {
 	// --- Update Selected Meal Section (Ingredients List) ---
 	if (selectedMeal && selectedMeal.child && selectedMeal.child.id) {
 		// Find the *latest* version of the selected meal from the refreshed adventure data
-		const currentMealData = currentAdventure.allChildren.find(m => m.child && m.child.id === selectedMeal.child.id);
+		const currentMealData = getChildrenFromMap(currentAdventure.childMap).find(m => m.child && m.child.id === selectedMeal.child.id);
 
 		if (!currentMealData) { // Meal might have been deleted in the meantime
 			if (selectedMealSection) selectedMealSection.style.display = 'none';
@@ -1375,8 +1376,9 @@ function updateAdventureDisplay() {
 		// Update Ingredients List (Now uses cards)
 		const ingredientsListDiv = document.getElementById('selectedMealIngredients');
 		ingredientsListDiv.innerHTML = '';
-		if (meal.allChildren && Array.isArray(meal.allChildren) && meal.allChildren.length > 0) {
-			meal.allChildren.forEach(ingredientData => {
+		const ingredients = getChildrenFromMap(meal.childMap);
+		if (ingredients && ingredients.length > 0) {
+			ingredients.forEach(ingredientData => {
 				if (ingredientData && ingredientData.child) {
 					const ingredient = ingredientData.child;
 					const card = document.createElement('div');
@@ -1427,7 +1429,7 @@ function updateAdventureDisplay() {
 	// --- Update Selected Ingredient Section ---
 	if (selectedIngredient && selectedIngredient.child && selectedIngredient.child.id) {
 		// Find the latest version from the *selected meal's* children
-		const currentIngredientData = selectedMeal?.child?.allChildren?.find(i => i.child && i.child.id === selectedIngredient.child.id);
+		const currentIngredientData = getChildrenFromMap(selectedMeal?.child?.childMap).find(i => i.child && i.child.id === selectedIngredient.child.id);
 
 		if (!currentIngredientData) {
 			if (selectedIngredientSection) selectedIngredientSection.style.display = 'none';
@@ -1857,7 +1859,7 @@ async function removeMeal(mealId) {
 	}
 
 	// Find meal name for confirmation
-	const mealData = currentAdventure.allChildren.find(m => m.child && m.child.id === mealId);
+	const mealData = getChildrenFromMap(currentAdventure.childMap).find(m => m.child && m.child.id === mealId);
 	const confirmMsg = mealData && mealData.child
 		? `Are you sure you want to remove meal "${mealData.child.name}"?`
 		: 'Are you sure you want to remove this meal?';
@@ -1894,7 +1896,7 @@ async function removeIngredient(ingredientId) {
 	const mealId = selectedMeal.child.id; // Get meal ID from state
 
 	// Find ingredient name for confirmation
-	const ingredientData = selectedMeal?.child?.allChildren?.find(i => i.child && i.child.id === ingredientId);
+	const ingredientData = getChildrenFromMap(selectedMeal?.child?.childMap).find(i => i.child && i.child.id === ingredientId);
 	const confirmMsg = ingredientData && ingredientData.child
 		? `Are you sure you want to remove ingredient "${ingredientData.child.name}" from meal "${selectedMeal.child.name}"?`
 		: `Are you sure you want to remove this ingredient from meal "${selectedMeal.child.name}"?`;
@@ -2238,3 +2240,14 @@ if (modalIngredientSearchInput) {
 }
 
 // --- End Add Ingredient Modal Search Logic --- 
+
+// Helper function to convert childMap to an array of children
+function getChildrenFromMap(childMap) {
+	if (typeof childMap !== 'object') {
+		console.error('getChildrenFromMap() received non-object argument:', childMap);
+		return [];
+	}
+	// Object.values(childMap) returns an array of the wrapper objects.
+	// We filter to ensure each wrapper is valid and has a .child property.
+	return Object.values(childMap).filter(entry => entry && entry.child);
+}
