@@ -8,12 +8,14 @@ import io.hulsbo.util.model.MeasurementUnit;
 public class Ingredient extends BaseClass {
 
     private MeasurementUnit measurementUnit = MeasurementUnit.GRAM;
-    private Double pcsWeight; // Weight in grams of one piece
+    private Double pcsWeight = null; // Weight in grams of one piece
     private Double density = 1.0; // g/ml, defaults to water
+    private UUID createdByUserId = null; // if null, ingredient is assumed to be from system.
+
 
     public Ingredient() {
 
-		// Not sure this is needed, an ingredient should not have any children.
+        // Not sure this is needed, an ingredient should not have any children.
         for (UUID key : childMap.keySet()) {
             nutrientsMap.put(childMap.get(key).getChild().getName(), childMap.get(key).getRatio());
         }
@@ -111,6 +113,8 @@ public class Ingredient extends BaseClass {
 
     // --- Getters and Setters for new fields ---
 
+    // MeasurementUnit
+
     public MeasurementUnit getMeasurementUnit() {
         return measurementUnit;
     }
@@ -119,23 +123,40 @@ public class Ingredient extends BaseClass {
         this.measurementUnit = measurementUnit;
     }
 
+    // PcsWeight
+
     public Double getPcsWeight() {
         return pcsWeight;
     }
 
-    public void setPcsWeight(Double pcsWeight) {
-        this.pcsWeight = pcsWeight;
+    public void setPcsWeight(Double g_per_pcs) {
+        if (g_per_pcs != null && g_per_pcs <= 0) {
+            throw new IllegalArgumentException("g_per_pcs must be greater than 0.");
+        }
+        this.pcsWeight = g_per_pcs;
     }
+
+    // Density
 
     public Double getDensity() {
         return density;
     }
 
-    public void setDensity(Double density) {
-        if (density != null && density <= 0) {
-            throw new IllegalArgumentException("Density must be greater than 0.");
+    public void setDensity(Double density_g_ml) {
+        if (density_g_ml != null && density_g_ml <= 0) {
+            throw new IllegalArgumentException("density_g_ml must be greater than 0.");
         }
-        this.density = density;
+        this.density = density_g_ml;
+    }
+
+    // CreatedByUserId
+
+    public UUID getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(UUID created_by_user_id) {
+        this.createdByUserId = created_by_user_id;
     }
 }
 
