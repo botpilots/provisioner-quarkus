@@ -16,6 +16,18 @@ let selectedMeasurementUnit = 'GRAM'; // Tracks selected unit NAME (string)
 let currentPcsWeight = null; // Store the current pcsWeight for the ingredient being modified
 let currentDensity = 1.0; // Store the current density (g/ml)
 
+// Unit Abbreviations
+const UNIT_ABBREVIATIONS = {
+    GRAM: "g",
+    KILOGRAM: "kg",
+    PCS: "g/pcs",
+    TEASPOON: "tsp",
+    TABLESPOON: "tbsp",
+    CUP: "cup",
+    MILLILITER: "ml",
+    LITER: "l"
+};
+
 
 // DOM elements
 const adventuresList = document.getElementById('adventures-list');
@@ -673,7 +685,7 @@ function populateUnitDropdown() {
 	availableMeasurementUnits.forEach(unitConfig => {
 		const item = document.createElement('a');
 		item.href = '#';
-		item.textContent = unitConfig.name.toLowerCase();
+		item.textContent = UNIT_ABBREVIATIONS[unitConfig.name] || unitConfig.name.toLowerCase();
 		item.dataset.unit = unitConfig.name; // Store the enum name
 
 		// Construct and set the title attribute for the dropdown item
@@ -702,7 +714,8 @@ function selectUnit(unitName) { // Parameter is the unit name (string)
 
 	// Update button text and title attribute for tooltip
 	if (modalIngredientUnitButton) {
-		modalIngredientUnitButton.querySelector('.unit-text').textContent = unitName.toLowerCase();
+		modalIngredientUnitButton.querySelector('.unit-text').textContent = 
+		UNIT_ABBREVIATIONS[unitConfig.name] || unitConfig.name.toLowerCase();
 		// Construct title string
 		let title = unitConfig?.description || '';
 		modalIngredientUnitButton.title = title;
@@ -752,9 +765,11 @@ function openModifyIngredientModal(ingredientData) {
 
 	// Update Unit Button Text and Title
 	if (modalIngredientUnitButton) {
-		modalIngredientUnitButton.querySelector('.unit-text').textContent = selectedMeasurementUnit.toLowerCase();
-		// Set initial title attribute
 		const unitConfig = availableMeasurementUnits.find(u => u.name === selectedMeasurementUnit);
+		modalIngredientUnitButton.querySelector('.unit-text').textContent = 
+		UNIT_ABBREVIATIONS[selectedMeasurementUnit] || selectedMeasurementUnit.toLowerCase();
+
+		// Set initial title attribute
 		let title = unitConfig?.description || '';
 		modalIngredientUnitButton.title = title;
 	}

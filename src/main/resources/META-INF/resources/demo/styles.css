@@ -1055,7 +1055,7 @@ button:active {
 
 /* PCS Set/Unset Button */
 .pcs-button {
-	width: 80px;
+	width: 160px;
     background-color: var(--accent-secondary);
     border: 1px solid var(--accent-secondary-light);
     color: var(--text-light);

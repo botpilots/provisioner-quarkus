@@ -24,13 +24,13 @@ public class ConfigurationResourceTest {
              // Verify the response is a list of the correct size
              .body("$", hasSize(expectedSize))
              // Verify the structure and values of the first element (GRAM)
-             .body("[0].name", equalTo("GRAM"))
-             .body("[0].standardGrams", equalTo(1.0f)) // Use 1.0f for float comparison
-             .body("[0].isVolume", equalTo(false))
+             .body("[1].name", equalTo("GRAM"))
+             .body("[1].standardGrams", equalTo(1.0f)) // Use 1.0f for float comparison
+             .body("[1].isVolume", equalTo(false))
              // Verify the structure and values of the second element (PCS), checking null handling
-             .body("[1].name", equalTo("PCS"))
-             .body("[1].standardGrams", nullValue()) // Check that standardGrams is null
-             .body("[1].isVolume", equalTo(false));
+             .body("[0].name", equalTo("PCS"))
+             .body("[0].standardGrams", nullValue()) // Check that standardGrams is null
+             .body("[0].isVolume", equalTo(false));
 
              // We don't need to check every single element in detail,
              // verifying the size and a couple of key elements (including null handling)
