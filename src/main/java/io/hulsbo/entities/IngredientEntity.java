@@ -50,7 +50,7 @@ public class IngredientEntity extends PanacheEntityBase {
     public String default_measurement;
     
     @Column(name = "date_created", nullable = false)
-    public ZonedDateTime date_created;
+    public ZonedDateTime date_created = ZonedDateTime.now();
     
     @Column(name = "date_modified")
     public ZonedDateTime date_modified;
@@ -82,6 +82,5 @@ public class IngredientEntity extends PanacheEntityBase {
         this.groups = groups;
         this.g_per_pcs = g_per_pcs;
         this.default_measurement = default_measurement;
-        this.date_created = ZonedDateTime.now();
     }
 }
