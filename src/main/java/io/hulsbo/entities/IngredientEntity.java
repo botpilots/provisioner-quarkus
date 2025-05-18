@@ -55,7 +55,7 @@ public class IngredientEntity extends PanacheEntityBase {
     @Column(name = "date_modified")
     public ZonedDateTime date_modified;
     
-    @Column(name = "created_by_user_id")
+    @Column(name = "created_by_user_id") // if null, ingredient is assumed to be from system.
     public UUID created_by_user_id;
 
     // Panache provides basic finders, persist, etc.
