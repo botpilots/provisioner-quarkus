@@ -1353,9 +1353,9 @@ function updateAdventureDisplay() {
                         </button>
                     </div>
                     <p>Calc. Weight: ${(currentAdventure.mealWeights && currentAdventure.mealWeights[meal.id] !== undefined ? currentAdventure.mealWeights[meal.id].toFixed(3) : '0.000')} kg</p>
-                    <p>Energy Density: ${meal.formattedEnergyDensity || '0.0'} kCal / kg</p>
+                    <p>Food ED: ${meal.formattedEnergyDensity || '0.0'} kCal / kg</p>
                     <p>Ratio: ${Math.round(mealData.ratio * 100) || '0.0'} %</p>
-                    <p>${(getChildrenFromMap(meal.childMap) ? getChildrenFromMap(meal.childMap).length : 0)} ingredients</p>
+                    <p>${(getChildrenFromMap(meal.childMap) ? getChildrenFromMap(meal.childMap).length : 0)} ${getChildrenFromMap(meal.childMap)?.length === 1 ? 'ingredient' : 'ingredients'}</p>
                 `;
 				// Pass the full meal object from currentAdventure to preserve nutrientMap
 				const fullMealData = meals.find(m => m.child && m.child.id === meal.id);
