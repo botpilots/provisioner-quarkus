@@ -35,7 +35,6 @@ All API endpoints are relative to the base URL of the application (default: http
   "crewSize": 0,
   "allCrewMembers": [],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }
 ```

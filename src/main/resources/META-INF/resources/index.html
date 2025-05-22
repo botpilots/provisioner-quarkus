@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Provisioner - Adventurous Food Planning</title>
     <link rel="stylesheet" href="demo/styles.css"> <!-- Link to the demo styles -->
-    <link rel="icon" href="/graphics/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/graphics/logo_sun.svg" type="image/svg+xml">
     <!-- Font Import (already in styles.css, but good practice to have here too) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,11 +151,18 @@
         </section>
 
         <section id="feedback" class="development-note">
-            <h2>We're Just Getting Started!</h2>
-            <p>Provisioner is currently under active development. We're passionate about creating the ultimate food planning tool for adventurers and your feedback is invaluable. Sign up below to get notified about updates, new features, and be among the first to try the full version.</p>
-            <!-- Simple Placeholder Button -->
-            <a href="mailto:feedback@provisioner.example.com?subject=Provisioner Feedback/Interest" class="cta-button">Provide Feedback</a>
             <!-- Replace with a real form/service later -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: stretch; gap: 30px; max-width: 900px; margin: 0 auto 25px auto; text-align: left;">
+                <div style="flex: 2; min-width: 300px;"> <!-- Text column -->
+                    <h2>We're Just Getting Started!</h2>
+                    <p style="margin-bottom: 0; color: var(--text-light);">Get the latest news about Provisioner, including new features and development progress. You may opt out at any time.</p>
+                </div>
+                <form id="optInForm" style="flex: 1; min-width: 250px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <input type="email" id="optInEmail" placeholder="Enter your email" required style="padding: 12px; width: 100%; box-sizing: border-box; border-radius: 5px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <button type="submit" class="cta-button" style="padding: 12px 20px; width: 100%; box-sizing: border-box;">Subscribe</button>
+                </form>
+            </div>
+            <div id="optInMessage" style="margin-top: 15px; min-height: 20px; width: 100%; text-align: center;"></div>
         </section>
 
     </main>
@@ -171,6 +178,52 @@
             </nav>
         </div>
     </footer>
+
+    <script>
+
+		let lastEmail = '';
+		let lastTryWasSuccess = false;
+
+        document.getElementById('optInForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('optInEmail').value;
+            const messageDiv = document.getElementById('optInMessage');
+            messageDiv.textContent = 'Processing...';
+
+			if (lastEmail === email && lastTryWasSuccess) {
+				messageDiv.textContent = 'You have already subscribed. Thank you!';
+				messageDiv.style.color = 'lightgreen';
+				return;
+			}
+
+			lastEmail = email;
+			lastTryWasSuccess = false;
+
+            fetch(`/opt/in?email=${encodeURIComponent(email)}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                return response.json().then(err => Promise.reject(err)); 
+            })
+            .then(data => {
+                messageDiv.textContent = 'Successfully subscribed! Thank you.';
+				lastTryWasSuccess = true;
+                messageDiv.style.color = 'lightgreen';
+                document.getElementById('optInEmail').value = ''; // Clear input
+            })
+            .catch(error => {
+                console.error('Opt-in error:', error);
+                messageDiv.textContent = `Subscription failed: ${error.message || 'Please try again.'}`;
+                messageDiv.style.color = 'red';
+            });
+        });
+    </script>
 
 </body>
 </html> 

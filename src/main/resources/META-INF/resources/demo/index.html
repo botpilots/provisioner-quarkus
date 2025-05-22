@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Provisioner - Adventurous Food Planning</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="/graphics/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/graphics/logo_sun.svg" type="image/svg+xml">
 </head>
 <body>
     <header class="site-header">
@@ -121,12 +121,13 @@
                                     <span class="label">Name:</span>
                                     <span id="selectedMealName" class="value">-</span>
                                 </div>
+								<h3>Calc. values</h3>
                                 <div class="info-item">
                                     <span class="label">Calc. Weight:</span>
                                     <span id="selectedMealWeight" class="value">-</span>
                                 </div>
                                 <div class="info-item">
-                                    <span class="label">Energy Density:</span>
+                                    <span class="label">Energy Density (ED):</span>
                                     <span id="selectedMealEnergyDensity" class="value">-</span>
                                 </div>
                                 <div class="info-item">
@@ -155,6 +156,7 @@
                                 <span class="label">Name:</span>
                                 <span id="selectedIngredientName" class="value">-</span>
                             </div>
+							<h3>Calc. values</h3>
                             <div class="info-item">
                                 <span class="label">Weight in Meal:</span>
                                 <span id="selectedIngredientWeight" class="value">-</span>
@@ -189,6 +191,28 @@
             </div>
         </div>
     </main>
+
+
+		<!-- Feedback section -->
+		<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 30px; width: 100%; max-width: 900px; margin: 40px auto 0px auto; text-align: left; padding: 0px 40px;">
+			<div style="flex: 3; min-width: 300px;">
+				<p style="color: var(--text-light); font-style: italic; border-bottom: 1px dotted var(--border-color); font-size: 1em; margin-bottom: 20px; padding-bottom: 5px;">
+					What if the biggest obstacle to freedom — food planning — became the most empowering part of your preparation?
+				</p>
+				<p>If this demo left you with any thoughts or ideas you'd like to share, I'd appreciate very much to hear from you. Please then use the button below to send me an email.<br>
+				</p>
+				<div style="display: flex; align-items: center; justify-content:space-between; gap: 20px; margin-top: 20px;">
+					<p style="margin: 0; color: var(--text-light);">
+						Happy adventuring!<br>
+						<i>Oskar, creator of Provisioner</i>
+					</p>
+				</div>
+				<div style="display: flex; justify-content: center;">
+					<button onclick="window.location.href='mailto:hello-provisioner@botpilots.ai?subject=Provisioner Demo Feedback'" class="cta-button" style="padding: 12px 20px; margin-top: 20px;">Send Feedback</button>
+				</div>
+			</div>
+		</div>
+
 
     <footer class="site-footer">
         <div class="footer-container">
@@ -270,15 +294,42 @@
     </div>
 
     <!-- Add Ingredient Modal -->
-    <div id="addIngredientModal" class="modal modal-small">
+    <div id="addIngredientModal" class="modal modal-large">
         <div class="modal-content">
             <span class="close-button" onclick="closeAddIngredientModal()">&times;</span>
-            <h3>Add New Ingredient</h3>
-             <div class="modal-input-row">
-                 <label for="modalIngredientName" class="sr-only">Ingredient Name:</label>
-                 <input type="text" id="modalIngredientName" placeholder="Enter name and press Enter...">
-                 <button onclick="addIngredient()">Add</button>
+            <h3>Add Ingredient to Meal</h3>
+
+            <!-- Section 1: Add New -->
+            <div class="modal-section">
+                <h4>Create New Ingredient</h4>
+                <div class="modal-input-row">
+                    <label for="modalIngredientName" class="sr-only">New Ingredient Name:</label>
+                    <input type="text" id="modalIngredientName" placeholder="Enter name for NEW ingredient...">
+                    <button id="addNewIngredientButton" onclick="addIngredient()">Add New</button>
+                </div>
             </div>
+
+            <!-- Separator -->
+            <hr class="modal-separator">
+
+            <!-- Section 2: Load Existing -->
+            <div class="modal-section">
+                <h4>Load Existing Ingredient</h4>
+                <div class="modal-input-row">
+                    <label for="modalIngredientSearch" class="sr-only">Search Existing:</label>
+                    <input type="text" id="modalIngredientSearch" placeholder="Search by name...">
+                    <button id="searchExistingIngredientButton" onclick="searchExistingIngredients()">Search</button>
+                </div>
+                <div id="ingredientSearchResults" class="list-container modal-search-results">
+                    <!-- Search results will be populated here -->
+                    <p class="placeholder-text">Search results will appear here.</p>
+                </div>
+                <div class="modal-footer-load">
+                     <p id="modalExistingIngredientFeedback" class="modal-feedback small-feedback" aria-live="polite"></p>
+                     <button id="loadSelectedIngredientButton" onclick="loadSelectedIngredient()" disabled>Load Selected</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -301,13 +352,39 @@
             <span class="close-button" onclick="closeModifyIngredientModal()">&times;</span>
             <h3>Modify Ingredient: <span id="modalIngredientModifyName">-</span></h3>
             <input type="hidden" id="modalIngredientModifyId">
-            
-            <!-- Nutrient Inputs -->
-            <div class="input-group"> 
-                <label for="modalIngredientWeight">Weight (g)</label>
-                <input type="number" id="modalIngredientWeight" min="0" step="0.1" value="100"> 
-            </div>
 
+            <!-- New Inline Weight/Unit Controls -->
+			 <div class="modal-inline-form-row">
+				<div class="input-group">
+					<label for="modalIngredientWeight" title="Recipe weight is the weight of the ingredient in the recipe (used for calculating proportionality between ingredients).">Recipe Weight</label>
+					<div class="inline-weight-controls">
+						<input type="number" id="modalIngredientWeight" min="0" step="1" value="100" title="Use up/down buttons to modify based on unit dropdown."> <!-- Default step is 1 (gram) -->
+						<div class="unit-dropdown-container" id="modalIngredientUnitDropdownContainer">
+							<span class="converted-value-label" id="modalIngredientConvertedValue" style="display: none;">-</span> <!-- Hidden by default -->
+							 <button type="button" class="unit-dropdown-button" id="modalIngredientUnitButton">
+								 <span class="unit-text">grams</span> <span class="dropdown-arrow">▾</span>
+							 </button>
+							 <div class="unit-dropdown-menu" id="modalIngredientUnitDropdown" style="display: none;">
+								 <!-- Options will be populated by JS -->
+							 </div>
+						 </div>
+						<button type="button" class="pcs-button" id="modalIngredientPcsButton" style="display: none;">Set</button> <!-- Hidden by default -->
+						
+	  
+					</div>
+				</div>
+				<div class="input-group">
+					<label for="modalIngredientDensity" title="Density in g/ml, used for volume unit conversions. Defaults to 1.0 (water).">Density (g/ml)</label>
+					  <!-- Density Input and Button - Moved Inline -->
+					  <div class="inline-weight-controls">
+						<label for="modalIngredientDensity" class="sr-only">Density (g/ml)</label> <!-- Screen-reader only label -->
+						<input type="number" id="modalIngredientDensity" min="0.01" step="0.01" value="1.0" title="Density in g/ml"> 
+						<button type="button" class="button" id="modalIngredientDensityUpdateButton" title="Update density only">Set</button>
+					 </div>
+				</div>
+			 </div>
+
+            <!-- Existing Nutrient Inputs -->
             <div class="input-group">
                 <label>Nutrient Ratios (%)</label>
                 <div class="input-row">

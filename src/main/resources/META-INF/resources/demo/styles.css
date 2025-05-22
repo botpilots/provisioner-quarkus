@@ -10,6 +10,7 @@
 :root {
     --bg-dark: #2d2d2d; /* Dark charcoal */
     --bg-medium: #4a4a4a; /* Medium grey for cards/sections */
+    --bg-medium-light: #5a5a5a; /* Lighter medium grey for special cards/sections (e.g. user created ingredients) */
     --bg-light: #f5f5f5; /* Original light bg for contrast if needed */
     --text-light: #f0eee9; /* Creamy off-white */
     --text-medium: #bdbdbd; /* Lighter grey for secondary text */
@@ -72,7 +73,6 @@ body {
     font-weight: bold;
     padding: 5px 0;
     border-bottom: 2px solid transparent;
-    transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .main-nav a:hover,
@@ -83,13 +83,22 @@ body {
 
 /* --- Main Content Container --- */
 .container {
-    max-width: 1600px;
+	width: 50%;
+    max-width: 800px;
     margin: 20px auto; /* Add margin from header/footer */
     background-color: transparent; /* Let body bg show */
     padding: 20px;
     border-radius: 0; /* Remove radius */
     box-shadow: none; /* Remove shadow */
     flex-grow: 1; /* Allow main content to grow and push footer down */
+}
+
+/* --- Main Content Container, mobile devices --- */
+@media (max-width: 1400px) {
+    .container {
+        width: 100%;
+		max-width: 100%;
+    }
 }
 
 h1 {
@@ -234,7 +243,6 @@ input, select, button {
     font-size: 0.95em;
     background-color: var(--bg-dark);
     color: var(--text-light);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input:focus, select:focus {
@@ -280,7 +288,6 @@ button {
     border: none;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
     background-image: linear-gradient(to bottom, var(--accent-primary-light), var(--accent-primary));
     box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
@@ -375,7 +382,7 @@ button:active {
 
 .info-column {
     flex: 1;
-    min-width: 300px;
+    min-width: 200px;
 }
 
 .info-column h3 {
@@ -411,7 +418,10 @@ button:active {
 /* --- Lists & Cards --- */
 .list-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Wider cards */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Desktop cards */
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Mobile cards */
+    }
     gap: 20px;
     margin-top: 10px;
 }
@@ -424,7 +434,6 @@ button:active {
     border-radius: 4px;
     background-color: var(--bg-dark);
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     box-shadow: 0 1px 3px var(--shadow-color);
@@ -491,7 +500,6 @@ button:active {
 .nutrients-list {
     margin-top: 15px;
     padding-top: 10px;
-    border-top: 1px solid var(--border-color);
 }
 
 .nutrient-item {
@@ -524,10 +532,6 @@ button:active {
     flex-wrap: wrap;
 }
 
-.meal-details .info-column {
-    min-width: 280px;
-}
-
 .ingredients-section {
     margin-top: 20px;
 }
@@ -536,10 +540,6 @@ button:active {
     margin-bottom: 10px;
     border-bottom: 1px dotted var(--border-color);
     padding-bottom: 5px;
-}
-
-.ingredient-details-section .info-column {
-    min-width: 280px;
 }
 
 /* --- Modal Styles --- */
@@ -779,7 +779,6 @@ button:active {
 .footer-nav a {
     color: var(--text-medium);
     text-decoration: none;
-    transition: color 0.2s ease;
 }
 
 .footer-nav a:hover,
@@ -798,4 +797,286 @@ button:active {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border: 0;
-} 
+}
+
+/* Larger modal variant for Add Ingredient */
+.modal-large .modal-content {
+    max-width: 650px; /* Wider than modal-small */
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--accent-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    text-align: center;
+    display: none;
+    border: 1px solid transparent;
+}
+
+.modal-feedback.error {
+    color: #f8d7da;
+    background-color: rgba(166, 77, 77, 0.5); /* Semi-transparent red bg */
+    border-color: var(--accent-danger);
+    display: block;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.modal-feedback.success {
+    color: #d4edda;
+    background-color: rgba(126, 141, 106, 0.5); /* Semi-transparent green bg */
+    border-color: var(--accent-secondary);
+    display: block;
+}
+
+/* --- Specific styles for Add Ingredient Modal --- */
+.modal-section {
+    margin-bottom: 15px;
+}
+
+.modal-section h4 {
+    color: var(--accent-secondary);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.modal-separator {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 20px 0;
+}
+
+.modal-search-results {
+    max-height: 200px; /* Limit height and make scrollable */
+    overflow-y: auto;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--bg-dark); /* Slightly different background for results area */
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    min-height: 80px; /* Ensure it has some height even when empty */
+    display: grid; /* Use grid like other lists */
+    grid-template-columns: 1fr; /* Single column */
+    gap: 8px; /* Smaller gap for list items */
+}
+
+.modal-search-results .placeholder-text {
+    color: var(--text-medium);
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    align-self: center; /* Center placeholder vertically */
+}
+.modal-search-results .error-text {
+    color: var(--accent-danger); 
+}
+
+.modal-search-result-item {
+    padding: 8px 12px; /* Smaller padding */
+    cursor: pointer;
+    background-color: var(--bg-medium); /* Use medium bg for items */
+    border: 1px solid var(--border-color);
+    box-shadow: none; /* Remove card shadow */
+}
+
+.modal-search-result-item:hover {
+    background-color: #5a5a5a;
+    border-color: var(--accent-secondary-light);
+    transform: none; /* No lift effect */
+    box-shadow: none;
+}
+
+.modal-search-result-item.selected {
+    background-color: var(--accent-secondary); /* Use secondary accent for selection */
+    border-color: var(--accent-secondary-light);
+    color: var(--text-light);
+}
+
+.modal-search-result-item h4 {
+    margin: 0 0 0 0;
+    font-size: 1em;
+    color: var(--text-light); /* White text for selected */
+}
+.modal-search-result-item.selected h4 {
+     color: var(--text-light); /* Ensure title is light when selected */
+}
+
+.modal-search-result-item p {
+    font-size: 0.8em;
+    color: var(--text-medium);
+    margin: 0;
+}
+.modal-search-result-item.selected p {
+     color: var(--text-light); /* Ensure text is light when selected */
+}
+
+.modal-search-result-item.user-created { /* User created ingredients are medium-light */
+    background-color: var(--bg-medium-light);
+}
+
+.modal-footer-load {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    /* No border needed here */
+}
+
+.modal-footer-load .modal-feedback {
+    /* Inherits base modal-feedback, adjust if needed */
+    flex-grow: 1;
+    margin: 0 15px 0 0;
+    padding: 0;
+    text-align: left;
+    border: none;
+    background: none;
+    display: block; /* Ensure it takes space */
+}
+
+.modal-footer-load .modal-feedback.error,
+.modal-footer-load .modal-feedback.success {
+    background: none; /* Override default bg */
+    border: none;
+    padding: 0;
+}
+
+.modal-footer-load button {
+    flex-shrink: 0;
+    margin: 0;
+    background-color: var(--accent-primary); /* Default to primary */
+    background-image: linear-gradient(to bottom, var(--accent-primary-light), var(--accent-primary));
+}
+
+.modal-footer-load button:disabled {
+    background-color: var(--bg-dark);
+    background-image: none;
+    color: var(--text-medium);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Make feedback text slightly smaller */
+.small-feedback {
+    font-size: 0.85em !important; /* Use important if necessary to override */
+}
+
+/* --- New Styles for Ingredient Modal Weight/Unit Controls --- */
+
+.inline-weight-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjust gap between all elements in the row */
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.inline-weight-controls input[type="number"] {
+    flex-grow: 1; /* Prevent weight input from growing too much */
+}
+
+.converted-value-label {
+	position: absolute; /* Position it absolutely within the unit-dropdown-container, i.e. left and inline with the dropdown button */
+	left: -80px; /* Align it to the left of the dropdown button */
+	top: 18%; /* Center it vertically to the dropdown button */
+    text-align: right;
+    font-style: italic;
+    color: var(--text-medium);
+}
+
+.unit-dropdown-container {
+    position: relative;
+}
+
+/* The button itself that shows the current unit */
+.unit-dropdown-button {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--bg-medium); /* Match other buttons or inputs */
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    border-radius: 4px;
+    cursor: pointer;
+    justify-content: space-between;
+}
+
+.unit-dropdown-button:hover,
+.unit-dropdown-button:focus {
+    background-color: var(--bg-dark); /* Darken on hover */
+    border-color: var(--accent-primary);
+}
+
+.unit-dropdown-button .unit-text {
+    margin-right: 5px; /* Space between text and arrow */
+}
+
+.unit-dropdown-button .dropdown-arrow {
+    font-size: 0.8em;
+}
+
+/* The dropdown menu */
+.unit-dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position below the button */
+    left: 0;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    min-width: 100px;
+    z-index: 1000; /* Ensure it's above other elements */
+    padding: 5px 0; /* Padding top/bottom */
+    max-height: 200px; /* Allow scrolling if many units */
+    overflow-y: auto;
+}
+
+.unit-dropdown-menu a {
+    display: block;
+    padding: 8px 12px;
+    color: var(--text-light);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.unit-dropdown-menu a:hover,
+.unit-dropdown-menu a:focus {
+    background-color: var(--accent-primary);
+    color: var(--bg-dark);
+    outline: none;
+}
+
+/* PCS Set/Unset Button */
+.pcs-button {
+	width: 160px;
+    background-color: var(--accent-secondary);
+    border: 1px solid var(--accent-secondary-light);
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 0.9em; /* Slightly smaller text */
+}
+
+.pcs-button:hover {
+    background-color: var(--accent-secondary-light);
+    border-color: var(--accent-secondary);
+}
+
+/* Ensure labels in the modify modal align well with the inline controls */
+#modifyIngredientModal .input-group {
+    align-items: center; /* Vertically align label and control row */
+}
+
+/* New class for the inline row containing weight and density */
+.modal-inline-form-row {
+    display: flex; 
+	flex-wrap: wrap;
+    flex-direction: row; /* Horizontal layout */
+    margin-bottom: 20px; /* Space below the row */
+	gap: 10px;
+}
+
+/* Adjustments for the input groups within this row */
+.modal-inline-form-row .input-group {
+    min-width: 250px; /* Add minimum width to force wrapping sooner */
+}

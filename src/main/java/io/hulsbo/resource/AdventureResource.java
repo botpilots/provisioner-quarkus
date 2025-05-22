@@ -1,4 +1,4 @@
-package io.hulsbo;
+package io.hulsbo.resource;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -6,7 +6,7 @@ import jakarta.ws.rs.core.Response;
 import io.hulsbo.model.Adventure;
 import io.hulsbo.model.Manager;
 import io.hulsbo.model.Meal;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.quarkus.logging.Log;
 
 import java.util.List;
@@ -30,11 +30,11 @@ public class AdventureResource {
 	@DELETE
 	@Path("/{id}")
 	public Response removeAdventure(@PathParam("id") String id) {
-		SafeID safeId = SafeID.fromString(id);
-		Log.infof("DELETE /adventures/%s - Entering removeAdventure", safeId);
+		UUID uuid = UUID.fromString(id);
+		Log.infof("DELETE /adventures/%s - Entering removeAdventure", uuid);
 		// TODO: Add check if object exists before removal for better logging?
-		Manager.removeBaseClassObject(safeId);
-		Log.infof("DELETE /adventures/%s - Success", safeId);
+		Manager.removeBaseClassObject(uuid);
+		Log.infof("DELETE /adventures/%s - Success", uuid);
 		return Response.ok().build();
 	}
 
@@ -48,7 +48,7 @@ public class AdventureResource {
 
 	@GET
 	@Path("/{id}")
-	public Response getAdventure(@PathParam("id") SafeID id) {
+	public Response getAdventure(@PathParam("id") UUID id) {
 		Log.infof("GET /adventures/%s - Entering getAdventure", id);
 		Adventure adventure = (Adventure) Manager.getBaseClass(id);
 		if (adventure == null) {
@@ -63,7 +63,7 @@ public class AdventureResource {
 	@POST
 	@Path("/{id}/crew")
 	public Response addCrewMember(
-			@PathParam("id") SafeID adventureId,
+			@PathParam("id") UUID adventureId,
 			@QueryParam("name") String name,
 			@QueryParam("age") int age,
 			@QueryParam("height") int height,
@@ -95,8 +95,8 @@ public class AdventureResource {
 	public Response removeCrewMember(
 		@PathParam("adventureId") String adventureIdStr,
 		@PathParam("crewId") String crewIdStr) {
-		SafeID adventureId = SafeID.fromString(adventureIdStr);
-		SafeID crewId = SafeID.fromString(crewIdStr);
+		UUID adventureId = UUID.fromString(adventureIdStr);
+		UUID crewId = UUID.fromString(crewIdStr);
 		Log.infof("DELETE /adventures/%s/crew/%s - Entering removeCrewMember", adventureId, crewId);
 		Adventure adventure = (Adventure) Manager.getBaseClass(adventureId);
 		if (adventure == null) {
@@ -118,7 +118,7 @@ public class AdventureResource {
 
 	@PUT
 	@Path("/{id}/days")
-	public Response setDays(@PathParam("id") SafeID id, @QueryParam("days") int days) {
+	public Response setDays(@PathParam("id") UUID id, @QueryParam("days") int days) {
 		Log.infof("PUT /adventures/%s/days?days=%d - Entering setDays", id, days);
 		Adventure adventure = (Adventure) Manager.getBaseClass(id);
 		if (adventure == null) {
@@ -142,7 +142,7 @@ public class AdventureResource {
 	@POST
 	@Path("/{id}/meals")
 	public Response addMeal(
-			@PathParam("id") SafeID adventureId,
+			@PathParam("id") UUID adventureId,
 			@QueryParam("name") String name) {
 		Log.infof("POST /adventures/%s/meals?name=%s - Entering addMeal", adventureId, name);
 
@@ -157,7 +157,7 @@ public class AdventureResource {
 			meal.setName(name);
 		}
 
-		SafeID mealId = adventure.putChild(meal);
+		UUID mealId = adventure.putChild(meal);
 		Log.infof("POST /adventures/%s/meals - Success adding Meal ID: %s", adventureId, mealId);
 		return Response.ok(mealId).build();
 	}
@@ -165,8 +165,8 @@ public class AdventureResource {
 	@DELETE
 	@Path("/{id}/meals/{mealId}")
 	public Response removeMeal(
-			@PathParam("id") SafeID adventureId,
-			@PathParam("mealId") SafeID mealId) {
+			@PathParam("id") UUID adventureId,
+			@PathParam("mealId") UUID mealId) {
 		Log.infof("DELETE /adventures/%s/meals/%s - Entering removeMeal", adventureId, mealId);
 
 		Adventure adventure = (Adventure) Manager.getBaseClass(adventureId);
@@ -187,7 +187,7 @@ public class AdventureResource {
 
 	@GET
 	@Path("/{id}/info")
-	public Response getAdventureInfo(@PathParam("id") SafeID id) {
+	public Response getAdventureInfo(@PathParam("id") UUID id) {
 		Log.infof("GET /adventures/%s/info - Entering getAdventureInfo", id);
 		Adventure adventure = (Adventure) Manager.getBaseClass(id);
 		if (adventure == null) {

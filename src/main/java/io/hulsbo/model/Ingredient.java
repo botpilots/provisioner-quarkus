@@ -1,21 +1,29 @@
 package io.hulsbo.model;
 
-import java.security.SecureRandom;
-import java.util.Set;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import java.util.Map;
 import io.quarkus.logging.Log;
-import io.hulsbo.util.model.baseclass.NutrientsMap;
+import io.hulsbo.util.model.MeasurementUnit;
 
 public class Ingredient extends BaseClass {
+
+    private MeasurementUnit measurementUnit = MeasurementUnit.GRAM;
+    private Double pcsWeight = null; // Weight in grams of one piece
+    private Double density = 1.0; // g/ml, defaults to water
+    private UUID createdByUserId = null; // if null, ingredient is assumed to be from system.
 
 
     public Ingredient() {
 
-		// Not sure this is needed, an ingredient should not have any children.
-        for (SafeID key : childMap.keySet()) {
+        // Not sure this is needed, an ingredient should not have any children.
+        for (UUID key : childMap.keySet()) {
             nutrientsMap.put(childMap.get(key).getChild().getName(), childMap.get(key).getRatio());
         }
+    }
+
+    // Call the overloaded constructor of BaseClass if id is provided
+    public Ingredient(UUID id) {
+        super(id);
     }
 
     /**
@@ -103,9 +111,52 @@ public class Ingredient extends BaseClass {
         Log.infof("[Ingredient ID: %s] Exiting updateAndPropagate.", getId());
     }
 
-    public double getTotalWeight() {
-        // Implementation of getTotalWeight method
-        return 0.0; // Placeholder return, actual implementation needed
+    // --- Getters and Setters for new fields ---
+
+    // MeasurementUnit
+
+    public MeasurementUnit getMeasurementUnit() {
+        return measurementUnit;
+    }
+
+    public void setMeasurementUnit(MeasurementUnit measurementUnit) {
+        this.measurementUnit = measurementUnit;
+    }
+
+    // PcsWeight
+
+    public Double getPcsWeight() {
+        return pcsWeight;
+    }
+
+    public void setPcsWeight(Double g_per_pcs) {
+        if (g_per_pcs != null && g_per_pcs <= 0) {
+            throw new IllegalArgumentException("g_per_pcs must be greater than 0.");
+        }
+        this.pcsWeight = g_per_pcs;
+    }
+
+    // Density
+
+    public Double getDensity() {
+        return density;
+    }
+
+    public void setDensity(Double density_g_ml) {
+        if (density_g_ml != null && density_g_ml <= 0) {
+            throw new IllegalArgumentException("density_g_ml must be greater than 0.");
+        }
+        this.density = density_g_ml;
+    }
+
+    // CreatedByUserId
+
+    public UUID getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(UUID created_by_user_id) {
+        this.createdByUserId = created_by_user_id;
     }
 }
 

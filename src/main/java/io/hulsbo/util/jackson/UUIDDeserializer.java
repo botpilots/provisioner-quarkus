@@ -3,26 +3,26 @@ package io.hulsbo.util.jackson;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 
 import java.io.IOException;
 
-public class SafeIDDeserializer extends StdDeserializer<SafeID> {
+public class UUIDDeserializer extends StdDeserializer<UUID> {
 
-	public SafeIDDeserializer() {
+	public UUIDDeserializer() {
 		this(null);
 	}
 
-	public SafeIDDeserializer(Class<?> vc) {
+	public UUIDDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
 	@Override
-	public SafeID deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+	public UUID deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		String id = p.getValueAsString();
 		if (id == null || id.isEmpty()) {
 			return null;
 		}
-		return SafeID.fromString(id);
+		return UUID.fromString(id);
 	}
 }

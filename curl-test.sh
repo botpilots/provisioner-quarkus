@@ -89,7 +89,6 @@ run_test "Create a New Adventure" \
   "crewSize": 0,
   "allCrewMembers": [],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -133,7 +132,6 @@ run_test "Add Crew Member" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -174,7 +172,6 @@ run_test "Set Number of Days" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }'
 
@@ -188,7 +185,7 @@ meal_id=$(echo "$output" | tr -d '"')
 
 # Test 5: Add Ingredient
 run_test "Add Ingredient" \
-    "curl -s -X POST \"http://localhost:8080/meals/$meal_id/ingredients?name=Oats\"" \
+    "curl -s -X POST \"http://localhost:8080/meals/$meal_id/ingredient?name=Oats\"" \
     '"id_[uuid]"'
 
 # Store the ingredient ID from the response
@@ -246,7 +243,6 @@ run_test "Get All Adventures" \
     }
   ],
   "formattedTotalRatio": "0,0",
-  "allChildren": [],
   "formattedEnergyDensity": "0.0"
 }]'
 

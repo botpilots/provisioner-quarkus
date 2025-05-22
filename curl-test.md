@@ -92,7 +92,7 @@ Expected response:
 ## 5. Add Ingredients to the Meal
 
 ```bash
-curl -X POST "http://localhost:8081/meals/meal-456/ingredients?name=Oats"
+curl -X POST "http://localhost:8081/meals/meal-456/ingredient?name=Oats"
 ```
 
 Expected response:

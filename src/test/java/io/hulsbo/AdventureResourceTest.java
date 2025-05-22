@@ -1,8 +1,7 @@
 package io.hulsbo;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.hulsbo.model.Adventure;
-import io.hulsbo.util.model.SafeID;
+import java.util.UUID;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,7 +68,7 @@ public class AdventureResourceTest {
 	@Order(4)
 	public void testGetAdventureNotFound() {
 		// Use a non-existent ID
-		String nonExistentId = SafeID.randomSafeID().toString();
+		String nonExistentId = UUID.randomUUID().toString();
 
 		given()
 				.contentType(ContentType.JSON)
